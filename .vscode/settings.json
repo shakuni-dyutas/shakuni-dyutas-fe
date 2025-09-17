@@ -1,0 +1,24 @@
+{
+  "cSpell.enabled": false,
+  "cSpell.enableFiletypes": [],
+  "cSpell.ignorePaths": ["**/*"],
+  "spellChecker.language": "off",
+  "spellChecker.enabled": false,
+  "spellright.language": [],
+  "spellright.documentTypes": [],
+  "korean.spellcheck.enabled": false,
+  "hanspell.enabled": false,
+  "[markdown]": {
+    "cSpell.enabled": false,
+    "editor.quickSuggestions": {
+      "comments": false,
+      "strings": false,
+      "other": false
+    },
+    "editor.suggest.showWords": false,
+    "editor.wordBasedSuggestions": "off"
+  },
+  "files.associations": {
+    "*.md": "plaintext"
+  }
+}
