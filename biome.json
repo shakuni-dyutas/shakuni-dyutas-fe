@@ -12,7 +12,8 @@
       "components.json",
       "biome.json",
       ".husky/**",
-      ".biomeignore"
+      ".biomeignore",
+      "*.md"
     ]
   },
   "formatter": {

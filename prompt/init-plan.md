@@ -25,7 +25,7 @@
   - [x] `src/entities/` - 비즈니스 엔티티
   - [x] `src/features/` - 기능별 모듈
   - [x] `src/widgets/` - 복합 UI 블록
-  - [x] `src/pages/` - 페이지별 컴포넌트
+  - [x] `src/screens/` - 페이지별 컴포넌트
 
 - [x] **기본 파일들 생성 (rules.md 반영: 배럴 파일 금지)**
   - [x] `src/shared/config/constants.ts` - 공용 상수 정의 (매직 넘버/리터럴 금지)
