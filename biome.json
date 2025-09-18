@@ -1,0 +1,38 @@
+{
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+  "files": {
+    "includes": [
+      "src/**",
+      "prompt/**",
+      "package.json",
+      "tsconfig.json",
+      "next.config.ts",
+      "eslint.config.mjs",
+      "commitlint.config.js",
+      "components.json",
+      "biome.json",
+      ".husky/**",
+      ".biomeignore"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noUnknownAtRules": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  }
+}

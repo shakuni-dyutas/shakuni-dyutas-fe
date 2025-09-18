@@ -16,10 +16,7 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * 날짜 포맷팅 함수
  */
-export function formatDate(
-  date: Date | string,
-  options?: Intl.DateTimeFormatOptions
-): string {
+export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
@@ -40,9 +37,7 @@ export function formatDate(
 export function formatRelativeTime(date: Date | string): string {
   const dateObject = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffInSeconds = Math.floor(
-    (now.getTime() - dateObject.getTime()) / 1000
-  );
+  const diffInSeconds = Math.floor((now.getTime() - dateObject.getTime()) / 1000);
 
   const rtf = new Intl.RelativeTimeFormat('ko-KR', { numeric: 'auto' });
 
@@ -72,10 +67,10 @@ export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const exponent = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return `${parseFloat((bytes / k ** exponent).toFixed(2))} ${units[exponent]}`;
 }
 
 /**
@@ -102,14 +97,14 @@ export function deepClone<T>(obj: T): T {
     return new Date(obj.getTime()) as T;
   }
 
-  if (obj instanceof Array) {
+  if (Array.isArray(obj)) {
     return obj.map((item) => deepClone(item)) as T;
   }
 
   if (typeof obj === 'object') {
     const clonedObj = {} as T;
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (Object.hasOwn(obj, key)) {
         clonedObj[key] = deepClone(obj[key]);
       }
     }
@@ -124,7 +119,7 @@ export function deepClone<T>(obj: T): T {
  */
 export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
 
