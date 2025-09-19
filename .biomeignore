@@ -1,0 +1,7 @@
+node_modules/
+.next/
+.npm-cache/
+.husky/_/
+public/mockServiceWorker.js
+./public/mockServiceWorker.js
+public/**

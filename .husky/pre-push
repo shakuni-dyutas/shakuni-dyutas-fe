@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+set -e
+
+echo "[husky] Type checking (tsc --noEmit) before push..."
+npm exec tsc --noEmit
+
+echo "[husky] Running build before push..."
+npm run build
+
+echo "[husky] Build passed. Proceeding with push."

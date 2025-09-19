@@ -49,14 +49,5 @@ export interface SortOption {
 export interface FilterOption {
   field: string;
   value: string | number | boolean;
-  operator?:
-    | 'eq'
-    | 'ne'
-    | 'gt'
-    | 'gte'
-    | 'lt'
-    | 'lte'
-    | 'contains'
-    | 'startsWith'
-    | 'endsWith';
+  operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'startsWith' | 'endsWith';
 }

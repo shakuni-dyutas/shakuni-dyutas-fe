@@ -25,7 +25,7 @@
   - [x] `src/entities/` - 비즈니스 엔티티
   - [x] `src/features/` - 기능별 모듈
   - [x] `src/widgets/` - 복합 UI 블록
-  - [x] `src/pages/` - 페이지별 컴포넌트
+  - [x] `src/screens/` - 페이지별 컴포넌트
 
 - [x] **기본 파일들 생성 (rules.md 반영: 배럴 파일 금지)**
   - [x] `src/shared/config/constants.ts` - 공용 상수 정의 (매직 넘버/리터럴 금지)
@@ -52,28 +52,29 @@
 
 ## 🔧 4단계: 라이브러리 및 도구 설정 (추후 진행)
 
-- [ ] **개발 도구 설정**
+- [x] **개발 도구 설정**
 
-  - [ ] Biome 설정 (린터 & 포매터)
-  - [ ] Husky + lint-staged 설정
-  - [ ] 커밋 컨벤션 설정
+  - [x] Biome 설정 (린터 & 포매터)
+  - [x] Husky + lint-staged 설정
+  - [x] 커밋 컨벤션 설정
 
-- [ ] **UI 라이브러리 설정**
+- [x] **UI 라이브러리 설정**
 
-  - [ ] Shadcn/ui 설치 및 설정
-  - [ ] Tweakcn 스타일 적용
+  - [x] Shadcn/ui 설치 및 설정
+  - [x] Tweakcn 스타일 적용
 
-- [ ] **상태 관리 및 데이터 페칭**
+- [x] **상태 관리 및 데이터 페칭**
 
-  - [ ] Tanstack Query 설정
-  - [ ] Zustand 설정
-  - [ ] MSW (Mock Service Worker) 설정
+  - [x] Tanstack Query 설정
+  - [x] Zustand 설정
+  - [x] MSW (Mock Service Worker) 설정
 
-- [ ] **폼 및 검증**
+- [x] **폼 및 검증**
 
-  - [ ] React Hook Form 설정
-  - [ ] Zod 스키마 검증 라이브러리 설정
+  - [x] React Hook Form 설정
+  - [x] Zod 스키마 검증 라이브러리 설정
 
+<!-- TODO
 - [ ] **테스팅 및 스토리북**
 
   - [ ] Vitest 설정
@@ -83,13 +84,15 @@
 - [ ] **인증**
   - [ ] Google OAuth 설정
 
+-->
+
 ---
 
 ## 📝 진행 상황
 
-- **완료된 단계**: 1단계 (프로젝트 초기 세팅), 2단계 (FSD 폴더 구조 생성)
+- **완료된 단계**: 1단계 (프로젝트 초기 세팅), 2단계 (FSD 폴더 구조 생성), 4단계 (라이브러리 및 도구 설정)
 - **현재 진행**: 3단계 (기본 설정 파일 구성)
-- **다음 예정**: 4단계 (라이브러리 및 도구 설정)
+- **다음 예정**: 3단계 마무리 및 추가 도구 도입
 
 ## 📌 참고사항
 
