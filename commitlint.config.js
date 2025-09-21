@@ -39,6 +39,8 @@ module.exports = {
         'perf',
         'revert',
         'wip',
+        'hotfix',
+        'comment',
       ],
     ],
     'scope-empty': [2, 'never'],
