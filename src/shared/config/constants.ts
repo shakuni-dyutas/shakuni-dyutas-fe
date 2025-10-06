@@ -10,6 +10,12 @@ export const API_CONFIG = {
   RETRY_COUNT: 3,
 } as const;
 
+// 라우트 경로 상수
+export const ROUTE_PATHS = {
+  HOME: '/',
+  LOGIN: '/login',
+} as const;
+
 // UI 관련 상수
 export const UI_CONFIG = {
   DEBOUNCE_DELAY: 300,
