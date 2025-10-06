@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 
@@ -36,8 +36,14 @@ function GoogleLoginButton({
           fill="currentColor"
         />
       </svg>
-      <span className="font-semibold">Google 계정으로 계속하기</span>
-      <ArrowRight aria-hidden="true" className="size-5 text-muted-foreground" />
+      <span className="font-semibold" aria-live="polite">
+        {isLoading ? 'Google 로그인 중…' : 'Google 계정으로 계속하기'}
+      </span>
+      {isLoading ? (
+        <Loader2 aria-hidden="true" className="size-5 animate-spin text-muted-foreground" />
+      ) : (
+        <ArrowRight aria-hidden="true" className="size-5 text-muted-foreground" />
+      )}
     </Button>
   );
 }
