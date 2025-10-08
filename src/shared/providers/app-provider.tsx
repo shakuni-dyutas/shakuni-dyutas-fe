@@ -8,12 +8,13 @@ import {
   GOOGLE_CLIENT_ID,
   IS_GOOGLE_CLIENT_CONFIGURED,
 } from '@/features/auth/google/config/google-oauth-config';
+import { runtimeEnv } from '@/shared/config/env';
 
 import { ReactQueryProvider } from './react-query-provider';
 
 export function AppProvider({ children }: PropsWithChildren) {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_API_MOCKING !== 'enabled') {
+    if (!runtimeEnv.isApiMockingEnabled) {
       return;
     }
 

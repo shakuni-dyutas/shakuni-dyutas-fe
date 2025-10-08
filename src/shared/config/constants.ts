@@ -3,9 +3,11 @@
  * 매직 넘버/리터럴 금지 규칙에 따라 의미 있는 상수로 분리
  */
 
+import { runtimeEnv } from '@/shared/config/env';
+
 // API 관련 상수
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  BASE_URL: runtimeEnv.apiBaseUrl,
   TIMEOUT: 10000,
   RETRY_COUNT: 3,
 } as const;
