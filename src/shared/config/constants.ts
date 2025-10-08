@@ -14,6 +14,7 @@ export const API_CONFIG = {
 export const ROUTE_PATHS = {
   HOME: '/',
   LOGIN: '/login',
+  PROFILE: '/profile',
 } as const;
 
 // UI 관련 상수
