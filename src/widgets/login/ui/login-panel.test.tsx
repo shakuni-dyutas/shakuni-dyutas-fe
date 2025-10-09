@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from 'vitest';
+import { GOOGLE_OAUTH_ERROR_MESSAGES } from '@/features/auth/google/config/google-oauth-config';
 import * as sessionService from '@/features/auth/session/model/session-service';
 import { server } from '@/shared/mocks/server';
 import { LoginPanel } from './login-panel';
@@ -14,6 +15,7 @@ let latestLoginOptions: {
   onError?: (error: { error_description?: string }) => void;
 } | null = null;
 let completeGoogleLoginSpy: MockInstance;
+let isGoogleClientConfiguredForTest = true;
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -36,7 +38,9 @@ vi.mock('@/features/auth/google/config/google-oauth-config', async () => {
   return {
     ...actual,
     GOOGLE_CLIENT_ID: 'test-client-id',
-    IS_GOOGLE_CLIENT_CONFIGURED: true,
+    get IS_GOOGLE_CLIENT_CONFIGURED() {
+      return isGoogleClientConfiguredForTest;
+    },
   };
 });
 
@@ -53,6 +57,7 @@ describe('LoginPanel', () => {
   const activeClients: QueryClient[] = [];
 
   beforeEach(() => {
+    isGoogleClientConfiguredForTest = true;
     replaceMock.mockReset();
     loginSpy.mockReset();
     latestLoginOptions = null;
@@ -207,5 +212,30 @@ describe('LoginPanel', () => {
     });
 
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  test('client id가 없으면 안내 메시지와 함께 버튼이 비활성화된다', async () => {
+    isGoogleClientConfiguredForTest = false;
+
+    const user = userEvent.setup();
+    const queryClient = createTestQueryClient();
+    activeClients.push(queryClient);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LoginPanel />
+      </QueryClientProvider>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Google 계정으로 계속하기' });
+
+    expect(button).toBeDisabled();
+
+    await user.click(button);
+
+    expect(loginSpy).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      GOOGLE_OAUTH_ERROR_MESSAGES.CLIENT_ID_MISSING,
+    );
   });
 });

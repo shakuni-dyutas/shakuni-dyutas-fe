@@ -35,9 +35,15 @@ function useGoogleOAuth(options: UseGoogleOAuthOptions = {}): UseGoogleOAuthRetu
   const handleSuccess = (codeResponse: CodeResponse) => {
     setIsLoading(false);
     setErrorMessage(null);
+
+    const maskedCode =
+      typeof codeResponse.code === 'string'
+        ? `${'*'.repeat(Math.max(codeResponse.code.length - 4, 0))}${codeResponse.code.slice(-4)}`
+        : undefined;
+
     logDebug('GoogleOAuth', 'Authorization code 수신', {
       scope: codeResponse.scope,
-      code: codeResponse.code,
+      maskedCode: maskedCode ?? 'N/A',
     });
     options.onSuccess?.(codeResponse);
   };

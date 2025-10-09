@@ -6,6 +6,14 @@ export const MOCK_USER = {
   name: 'Dyutas Player',
   avatarUrl: null,
 };
+export const MOCK_USER_ID = MOCK_USER.id;
+
+export const GOOGLE_AUTH_CODES = {
+  VALID: 'valid-code',
+  INVALID: 'invalid-code',
+  CANCELLED: 'cancelled',
+  SERVER_ERROR: 'server-error',
+} as const;
 
 export function createAccessTokenResponse(accessToken: string) {
   const issuedAt = Date.now();

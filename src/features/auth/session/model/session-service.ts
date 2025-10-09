@@ -3,6 +3,7 @@ import { exchangeGoogleAuthorizationCode } from '@/features/auth/session/api/exc
 import { requestSessionRefresh } from '@/features/auth/session/api/refresh-session';
 import { configureApiClientAuthentication } from '@/shared/api/api-client';
 import { logDebug } from '@/shared/lib/logger';
+import { sanitizeRedirectPath } from '@/shared/lib/sanitize-redirect-path';
 
 interface CompleteGoogleLoginParams {
   code: string;
@@ -28,14 +29,9 @@ configureApiClientAuthentication({
 });
 
 async function completeGoogleLogin({ code, redirectUri }: CompleteGoogleLoginParams) {
-  const sanitizedRedirectUri =
-    typeof redirectUri === 'string' && redirectUri.startsWith('/') && !redirectUri.startsWith('//')
-      ? redirectUri
-      : undefined;
-
   const sessionSnapshot = await exchangeGoogleAuthorizationCode({
     code,
-    redirectUri: sanitizedRedirectUri,
+    redirectUri: sanitizeRedirectPath(redirectUri),
   });
 
   useSessionStore.getState().setSession(sessionSnapshot);

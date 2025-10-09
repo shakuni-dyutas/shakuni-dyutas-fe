@@ -18,21 +18,38 @@ export function AppProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    void import('@/shared/mocks').then(({ enableMocking }) => enableMocking());
+    let isUnmounted = false;
+
+    const enableMocks = async () => {
+      try {
+        const { enableMocking } = await import('@/shared/mocks');
+
+        if (!isUnmounted) {
+          await enableMocking();
+        }
+      } catch (error) {
+        console.error('[AppProvider] MSW 초기화에 실패했습니다.', error);
+      }
+    };
+
+    enableMocks();
+
+    return () => {
+      isUnmounted = true;
+    };
   }, []);
 
-  const fallbackClientId = GOOGLE_CLIENT_ID || 'missing-google-client-id';
+  if (!IS_GOOGLE_CLIENT_CONFIGURED) {
+    logDebug('GoogleOAuthProvider', 'client id가 없어 로그인 기능이 비활성화됩니다.');
+
+    return <ReactQueryProvider>{children}</ReactQueryProvider>;
+  }
 
   return (
     <GoogleOAuthProvider
-      clientId={fallbackClientId}
+      clientId={GOOGLE_CLIENT_ID}
       onScriptLoadError={() => {
         logDebug('GoogleOAuthProvider', 'Google Identity Services 스크립트 로드에 실패했어요.');
-      }}
-      onScriptLoadSuccess={() => {
-        if (!IS_GOOGLE_CLIENT_CONFIGURED) {
-          logDebug('GoogleOAuthProvider', 'client id가 없어 로그인 기능이 비활성화됩니다.');
-        }
       }}
     >
       <ReactQueryProvider>{children}</ReactQueryProvider>
