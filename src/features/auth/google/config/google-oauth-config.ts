@@ -2,11 +2,13 @@
  * Google OAuth 관련 환경설정 및 공용 문구
  */
 
+import { logDebug } from '@/shared/lib/logger';
+
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 const IS_GOOGLE_CLIENT_CONFIGURED = Boolean(GOOGLE_CLIENT_ID);
 
-if (!IS_GOOGLE_CLIENT_CONFIGURED && process.env.NODE_ENV === 'development') {
-  console.warn('[Google OAuth] NEXT_PUBLIC_GOOGLE_CLIENT_ID가 설정되지 않았습니다.');
+if (!IS_GOOGLE_CLIENT_CONFIGURED) {
+  logDebug('GoogleOAuthConfig', 'NEXT_PUBLIC_GOOGLE_CLIENT_ID가 설정되지 않았습니다.');
 }
 
 const GOOGLE_OAUTH_ERROR_MESSAGES = {

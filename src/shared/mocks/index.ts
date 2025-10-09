@@ -1,6 +1,7 @@
 'use client';
 
 import { runtimeEnv } from '@/shared/config/env';
+import { logDebug } from '@/shared/lib/logger';
 
 let workerInitialization: Promise<void> | null = null;
 
@@ -30,7 +31,7 @@ export async function enableMocking() {
     await workerInitialization;
   } catch (error) {
     workerInitialization = null;
-    console.error('[MSW] 워커 초기화 중 오류가 발생했어요.', error);
+    logDebug('MSW', '워커 초기화 중 오류가 발생했어요.', error);
     throw error;
   }
 }

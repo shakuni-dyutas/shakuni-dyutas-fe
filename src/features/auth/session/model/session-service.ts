@@ -2,6 +2,7 @@ import { useSessionStore } from '@/entities/session/model/session-store';
 import { exchangeGoogleAuthorizationCode } from '@/features/auth/session/api/exchange-google-code';
 import { requestSessionRefresh } from '@/features/auth/session/api/refresh-session';
 import { configureApiClientAuthentication } from '@/shared/api/api-client';
+import { logDebug } from '@/shared/lib/logger';
 
 interface CompleteGoogleLoginParams {
   code: string;
@@ -17,7 +18,7 @@ configureApiClientAuthentication({
       return true;
     } catch (error) {
       useSessionStore.getState().clearSession();
-      console.error('[Session] 액세스 토큰 갱신에 실패했어요.', error);
+      logDebug('Session', '액세스 토큰 갱신에 실패했어요.', error);
       return false;
     }
   },

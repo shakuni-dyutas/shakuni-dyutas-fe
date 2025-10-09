@@ -9,8 +9,8 @@ import {
   IS_GOOGLE_CLIENT_CONFIGURED,
 } from '@/features/auth/google/config/google-oauth-config';
 import { runtimeEnv } from '@/shared/config/env';
-
-import { ReactQueryProvider } from './react-query-provider';
+import { logDebug } from '@/shared/lib/logger';
+import { ReactQueryProvider } from '@/shared/providers/react-query-provider';
 
 export function AppProvider({ children }: PropsWithChildren) {
   useEffect(() => {
@@ -27,11 +27,11 @@ export function AppProvider({ children }: PropsWithChildren) {
     <GoogleOAuthProvider
       clientId={fallbackClientId}
       onScriptLoadError={() => {
-        console.error('[Google OAuth] Google Identity Services 스크립트를 불러오지 못했어요.');
+        logDebug('GoogleOAuthProvider', 'Google Identity Services 스크립트 로드에 실패했어요.');
       }}
       onScriptLoadSuccess={() => {
         if (!IS_GOOGLE_CLIENT_CONFIGURED) {
-          console.warn('[Google OAuth] client id가 없어 로그인 기능이 비활성화됩니다.');
+          logDebug('GoogleOAuthProvider', 'client id가 없어 로그인 기능이 비활성화됩니다.');
         }
       }}
     >

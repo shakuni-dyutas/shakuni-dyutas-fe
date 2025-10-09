@@ -15,8 +15,9 @@ const rawEnv = {
 const parsedEnv = clientEnvSchema.safeParse(rawEnv);
 
 if (!parsedEnv.success) {
-  console.error('[env] 환경변수 검증에 실패했어요.', parsedEnv.error.flatten().fieldErrors);
-  throw new Error('환경변수 구성이 올바르지 않습니다.');
+  const fieldErrors = parsedEnv.error.flatten().fieldErrors;
+  const serializedErrors = JSON.stringify(fieldErrors);
+  throw new Error(`환경변수 구성이 올바르지 않습니다: ${serializedErrors}`);
 }
 
 const runtimeEnv = {

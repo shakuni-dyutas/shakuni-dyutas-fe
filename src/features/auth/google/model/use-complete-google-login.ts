@@ -3,10 +3,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { HTTPError } from 'ky';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 
+import { resolveHttpErrorMessage } from '@/features/auth/google/lib/resolve-http-error-message';
+import { resolveRedirectPath } from '@/features/auth/google/lib/resolve-redirect-path';
 import { completeGoogleLogin } from '@/features/auth/session/model/session-service';
-import { ROUTE_PATHS } from '@/shared/config/constants';
+import { logDebug } from '@/shared/lib/logger';
 
 const LOGIN_ERROR_MESSAGES = {
   DEFAULT: '로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
@@ -19,33 +21,6 @@ type CompleteGoogleLoginVariables = {
 };
 
 type CompleteGoogleLoginResult = Awaited<ReturnType<typeof completeGoogleLogin>>;
-
-async function resolveHttpErrorMessage(error: HTTPError) {
-  try {
-    const body = await error.response.clone().json();
-
-    if (typeof body === 'object' && body !== null && 'message' in body) {
-      const message = (body as { message?: string }).message;
-      return typeof message === 'string' ? message : null;
-    }
-  } catch (parseError) {
-    console.error('[Google OAuth] 로그인 응답 파싱 중 오류가 발생했어요.', parseError);
-  }
-
-  return null;
-}
-
-function resolveRedirectPath(redirectUri?: string) {
-  if (
-    typeof redirectUri === 'string' &&
-    redirectUri.startsWith('/') &&
-    !redirectUri.startsWith('//')
-  ) {
-    return redirectUri;
-  }
-
-  return ROUTE_PATHS.HOME;
-}
 
 function useCompleteGoogleLogin() {
   const router = useRouter();
@@ -62,42 +37,38 @@ function useCompleteGoogleLogin() {
     },
     onError: async (error) => {
       if (error instanceof DOMException && error.name === 'AbortError') {
+        logDebug('GoogleOAuth', '로그인이 AbortError로 취소되었어요.', error);
         setErrorMessage(LOGIN_ERROR_MESSAGES.CANCELLED);
         return;
       }
 
       if (error instanceof HTTPError) {
         const resolvedMessage = await resolveHttpErrorMessage(error);
+        logDebug('GoogleOAuth', 'HTTP 오류 응답을 수신했어요.', error);
         setErrorMessage(resolvedMessage ?? LOGIN_ERROR_MESSAGES.DEFAULT);
         return;
       }
 
-      console.error('[Google OAuth] 로그인 완료 처리 중 오류가 발생했어요.', error);
+      logDebug('GoogleOAuth', '로그인 완료 처리 중 예기치 못한 오류가 발생했어요.', error);
       setErrorMessage(LOGIN_ERROR_MESSAGES.DEFAULT);
     },
   });
 
-  const completeLogin = useCallback(
-    (variables: CompleteGoogleLoginVariables) => {
-      mutation.mutate(variables);
-    },
-    [mutation],
-  );
+  function completeLogin(variables: CompleteGoogleLoginVariables) {
+    mutation.mutate(variables);
+  }
 
-  const resetError = useCallback(() => {
+  function resetError() {
     setErrorMessage(null);
     mutation.reset();
-  }, [mutation]);
+  }
 
-  return useMemo(
-    () => ({
-      completeLogin,
-      isLoading: mutation.isPending,
-      errorMessage,
-      resetError,
-    }),
-    [completeLogin, errorMessage, mutation.isPending, resetError],
-  );
+  return {
+    completeLogin,
+    isLoading: mutation.isPending,
+    errorMessage,
+    resetError,
+  };
 }
 
-export { resolveHttpErrorMessage, resolveRedirectPath, useCompleteGoogleLogin };
+export { useCompleteGoogleLogin };

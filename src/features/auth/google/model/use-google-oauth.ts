@@ -1,12 +1,13 @@
 'use client';
 
 import { type CodeResponse, type NonOAuthError, useGoogleLogin } from '@react-oauth/google';
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import {
   GOOGLE_OAUTH_ERROR_MESSAGES,
   IS_GOOGLE_CLIENT_CONFIGURED,
 } from '@/features/auth/google/config/google-oauth-config';
+import { logDebug } from '@/shared/lib/logger';
 
 interface UseGoogleOAuthOptions {
   onSuccess?: (codeResponse: CodeResponse) => void;
@@ -31,40 +32,40 @@ function useGoogleOAuth(options: UseGoogleOAuthOptions = {}): UseGoogleOAuthRetu
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSuccess = useCallback(
-    (codeResponse: CodeResponse) => {
-      setIsLoading(false);
-      setErrorMessage(null);
-      console.info('[Google OAuth] Authorization code 수신', {
-        scope: codeResponse.scope,
-        code: codeResponse.code,
-      });
-      options.onSuccess?.(codeResponse);
-    },
-    [options],
-  );
+  const handleSuccess = (codeResponse: CodeResponse) => {
+    setIsLoading(false);
+    setErrorMessage(null);
+    logDebug('GoogleOAuth', 'Authorization code 수신', {
+      scope: codeResponse.scope,
+      code: codeResponse.code,
+    });
+    options.onSuccess?.(codeResponse);
+  };
 
-  const handleFailure = useCallback((message?: string) => {
+  const handleFailure = (message?: string) => {
     setIsLoading(false);
     setErrorMessage(message ?? GOOGLE_OAUTH_ERROR_MESSAGES.DEFAULT);
-  }, []);
+  };
 
   const login = useGoogleLogin({
     flow: 'auth-code',
     onSuccess: handleSuccess,
     onError: (errorResponse) => {
+      logDebug('GoogleOAuth', 'OAuth 오류 응답을 수신했어요.', errorResponse);
       handleFailure(errorResponse.error_description);
     },
     onNonOAuthError: (nonOAuthError) => {
       const fallbackMessage =
         NON_OAUTH_ERROR_COPY[nonOAuthError.type] ?? GOOGLE_OAUTH_ERROR_MESSAGES.DEFAULT;
+      logDebug('GoogleOAuth', 'OAuth 외 오류가 발생했어요.', nonOAuthError);
       handleFailure(fallbackMessage);
     },
   });
 
-  const signIn = useCallback(() => {
+  const signIn = () => {
     if (!IS_GOOGLE_CLIENT_CONFIGURED) {
       setErrorMessage(GOOGLE_OAUTH_ERROR_MESSAGES.CLIENT_ID_MISSING);
+      logDebug('GoogleOAuth', 'client id가 없어 로그인 요청을 중단했어요.');
       return;
     }
 
@@ -74,24 +75,21 @@ function useGoogleOAuth(options: UseGoogleOAuthOptions = {}): UseGoogleOAuthRetu
     try {
       login();
     } catch (error) {
-      console.error('[Google OAuth] 로그인 요청 중 예기치 못한 오류가 발생했어요.', error);
+      logDebug('GoogleOAuth', '로그인 요청 중 예기치 못한 오류가 발생했어요.', error);
       handleFailure();
     }
-  }, [handleFailure, login]);
+  };
 
-  const resetError = useCallback(() => {
+  const resetError = () => {
     setErrorMessage(null);
-  }, []);
+  };
 
-  return useMemo(
-    () => ({
-      signIn,
-      isLoading,
-      errorMessage,
-      resetError,
-    }),
-    [errorMessage, isLoading, resetError, signIn],
-  );
+  return {
+    signIn,
+    isLoading,
+    errorMessage,
+    resetError,
+  };
 }
 
 export { useGoogleOAuth };
