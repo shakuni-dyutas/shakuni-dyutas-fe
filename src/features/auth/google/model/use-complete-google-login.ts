@@ -100,4 +100,4 @@ function useCompleteGoogleLogin() {
   );
 }
 
-export { useCompleteGoogleLogin };
+export { resolveHttpErrorMessage, resolveRedirectPath, useCompleteGoogleLogin };
