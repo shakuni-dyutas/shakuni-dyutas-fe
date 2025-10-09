@@ -1,15 +1,11 @@
 'use client';
 
-import { Home, PlusCircle, UserRound } from 'lucide-react';
+import { Home, UserRound } from 'lucide-react';
 import { ROUTE_PATHS } from '@/shared/config/constants';
 import type { NavigationItem } from './bottom-navigation';
 import { BottomNavigation } from './bottom-navigation';
 
-interface BottomNavigationDefaultProps {
-  onCreateRoomClick?: () => void;
-}
-
-function BottomNavigationDefault({ onCreateRoomClick }: BottomNavigationDefaultProps) {
+function BottomNavigationDefault() {
   const items: NavigationItem[] = [
     {
       id: 'home',
@@ -17,15 +13,6 @@ function BottomNavigationDefault({ onCreateRoomClick }: BottomNavigationDefaultP
       href: ROUTE_PATHS.HOME,
       icon: Home,
       ariaLabel: '로비로 이동',
-    },
-    {
-      id: 'create',
-      label: '방 생성',
-      href: '#create-room',
-      icon: PlusCircle,
-      isPrimary: true,
-      ariaLabel: '방 만들기',
-      onClick: onCreateRoomClick,
     },
     {
       id: 'profile',
@@ -40,4 +27,3 @@ function BottomNavigationDefault({ onCreateRoomClick }: BottomNavigationDefaultP
 }
 
 export { BottomNavigationDefault };
-export type { BottomNavigationDefaultProps };

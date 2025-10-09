@@ -1,4 +1,4 @@
-import { HomePage } from '@/screens/home/ui/home-page';
+import { LobbyPage } from '@/screens/lobby/ui/lobby-page';
 import { AppHeaderDefault } from '@/widgets/app-shell/ui/app-header-default';
 import { AppShell } from '@/widgets/app-shell/ui/app-shell';
 import { BottomNavigationDefault } from '@/widgets/app-shell/ui/bottom-navigation-default';
@@ -6,7 +6,7 @@ import { BottomNavigationDefault } from '@/widgets/app-shell/ui/bottom-navigatio
 function HomeRoute() {
   return (
     <AppShell headerSlot={<AppHeaderDefault />} bottomNavigationSlot={<BottomNavigationDefault />}>
-      <HomePage />
+      <LobbyPage />
     </AppShell>
   );
 }

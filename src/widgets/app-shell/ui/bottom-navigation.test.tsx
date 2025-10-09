@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { Home, PlusCircle, UserRound } from 'lucide-react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import type { NavigationItem } from './bottom-navigation';
 import { BottomNavigation } from './bottom-navigation';
@@ -52,27 +51,16 @@ vi.mock('@/shared/config/constants', () => ({
 }));
 
 describe('BottomNavigationDefault', () => {
-  const onCreateRoomClick = vi.fn();
-
-  beforeEach(() => {
-    onCreateRoomClick.mockReset();
-  });
-
-  test('기본 네비게이션 항목을 렌더링하고 라우터 이동을 호출한다', async () => {
-    const user = userEvent.setup();
-
+  test('로비와 프로필 네비게이션만 렌더링된다', async () => {
     const { BottomNavigationDefault } = await import('./bottom-navigation-default');
 
-    render(<BottomNavigationDefault onCreateRoomClick={onCreateRoomClick} />);
+    render(<BottomNavigationDefault />);
 
     const homeLink = screen.getByRole('link', { name: '로비로 이동' });
     const profileLink = screen.getByRole('link', { name: '프로필로 이동' });
 
-    expect(homeLink).toHaveAttribute('href', '/');
-    expect(profileLink).toHaveAttribute('href', '/profile');
-
-    await user.click(screen.getByRole('button', { name: '방 만들기' }));
-
-    expect(onCreateRoomClick).toHaveBeenCalledTimes(1);
+    expect(homeLink).toBeInTheDocument();
+    expect(profileLink).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /방 생성/ })).not.toBeInTheDocument();
   });
 });

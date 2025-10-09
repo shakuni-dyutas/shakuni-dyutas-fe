@@ -11,7 +11,6 @@ interface NavigationItem {
   label: string;
   href: string;
   icon: ComponentType<{ className?: string }>;
-  isPrimary?: boolean;
   ariaLabel?: string;
   onClick?: () => void;
 }
@@ -43,8 +42,6 @@ function BottomNavigation({
         const buttonClasses = cn(
           'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
           'text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-          item.isPrimary &&
-            'max-w-fit -mt-6 flex-1 basis-auto px-4 py-3 text-sm shadow-[0_10px_30px_-15px_rgba(59,130,246,0.9)]',
           isActive && 'text-primary',
           itemClassName,
           isActive && activeItemClassName,
@@ -60,8 +57,8 @@ function BottomNavigation({
               onClick={item.onClick}
               data-active={isActive}
             >
-              <Icon className={cn('size-5', item.isPrimary && 'size-6')} aria-hidden="true" />
-              {!item.isPrimary ? <span>{item.label}</span> : null}
+              <Icon className="size-5" aria-hidden="true" />
+              <span>{item.label}</span>
             </button>
           );
         }
@@ -74,8 +71,8 @@ function BottomNavigation({
             aria-label={item.ariaLabel ?? item.label}
             data-active={isActive}
           >
-            <Icon className={cn('size-5', item.isPrimary && 'size-6')} aria-hidden="true" />
-            {!item.isPrimary ? <span>{item.label}</span> : null}
+            <Icon className="size-5" aria-hidden="true" />
+            <span>{item.label}</span>
           </Link>
         );
       })}
