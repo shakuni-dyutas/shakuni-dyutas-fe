@@ -33,10 +33,7 @@ function BottomNavigation({
 
   return (
     <div
-      className={cn(
-        'flex w-full items-center justify-between rounded-full bg-background/90 px-4 py-2 shadow-lg shadow-primary/5 backdrop-blur supports-[backdrop-filter]:bg-background/70',
-        className,
-      )}
+      className={cn('flex w-full items-center justify-between px-4 py-2 ', className)}
       data-slot="app-shell:bottom-nav-container"
     >
       {items.map((item) => {

@@ -137,7 +137,7 @@ function AppHeaderDefault({
   return (
     <AppHeader
       leftSlot={leftSlot}
-      centerSlot={centerSlot}
+      centerSlot={centerSlot ?? <span className="text-base font-semibold">Dyutas</span>}
       rightSlot={rightSlot}
       className={className}
       leftClassName={leftClassName}

@@ -9,8 +9,6 @@ const DEFAULT_HEADER_TITLE = 'Shakuni Dyutas';
 interface AppHeaderProps {
   leftSlot?: ReactNode;
   centerSlot?: ReactNode;
-  /** @deprecated centerSlot 사용 */
-  logoSlot?: ReactNode;
   rightSlot?: ReactNode;
   className?: string;
   leftClassName?: string;
@@ -21,14 +19,13 @@ interface AppHeaderProps {
 function AppHeader({
   leftSlot,
   centerSlot,
-  logoSlot,
   rightSlot,
   className,
   leftClassName,
   centerClassName,
   rightClassName,
 }: AppHeaderProps) {
-  const resolvedCenterSlot = centerSlot ?? logoSlot ?? (
+  const resolvedCenterSlot = centerSlot ?? (
     <span className="text-base font-semibold tracking-tight">{DEFAULT_HEADER_TITLE}</span>
   );
 

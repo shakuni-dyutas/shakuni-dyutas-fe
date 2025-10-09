@@ -23,11 +23,4 @@ describe('AppHeader', () => {
     expect(screen.getByText('Center Content')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Right Action' })).toBeInTheDocument();
   });
-
-  test('logoSlot을 전달하면 centerSlot 대체로 사용한다', () => {
-    render(<AppHeader logoSlot={<span>Logo Slot</span>} rightSlot={<span>Right</span>} />);
-
-    expect(screen.getByText('Logo Slot')).toBeInTheDocument();
-    expect(screen.getByText('Right')).toBeInTheDocument();
-  });
 });
