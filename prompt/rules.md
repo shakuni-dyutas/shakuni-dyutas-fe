@@ -1,3 +1,11 @@
+## 0. 목표
+
+- 코드 구조는 FSD(Feature-Sliced Design) 기반의 커스텀 규칙을 따른다.
+- 스타일링은 tailwind + shadcn 컴포넌트를 기반으로 커스텀 컴포넌트로 확장시킨다.
+- 컴포넌트가 하나의 책임만 가지도록 분리한다.
+- 컴포넌트 안에 비즈니스로직이 있으면 FSD 패턴에 맞게 커스텀 훅 또는 lib 폴더에 함수로 추출한다.
+- shadcn 컴포넌트 설치시에는 반드시 공식문서를 보고 cli를 사용한다 (pnpm dlx shadcn@latest)
+
 ## 1. 핵심 원칙
 
 - **Export**: named export만 허용. default export 금지.

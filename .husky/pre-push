@@ -5,6 +5,9 @@ set -e
 echo "[husky] Type checking (tsc --noEmit) before push..."
 npm exec tsc --noEmit
 
+echo "[husky] Running tests before push..."
+npm test
+
 echo "[husky] Running build before push..."
 npm run build
 
