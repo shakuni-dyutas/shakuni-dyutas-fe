@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
 
 const SCROLL_TOP_THRESHOLD = 24;
 
@@ -42,7 +43,7 @@ function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
   return (
     <motion.aside
       className={cn(
-        'fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] z-40 w-full max-w-md -translate-x-1/2 rounded-2xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur supports-[backdrop-filter]:backdrop-blur-md sm:px-6 md:max-w-lg',
+        'fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] z-40 w-full max-w-md -translate-x-1/2 md:max-w-lg',
         className,
       )}
       aria-label="방 생성 안내"
@@ -56,22 +57,24 @@ function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
       style={{ pointerEvents: isVisible ? 'auto' : 'none' }}
       data-slot="lobby:create-room-cta"
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold leading-tight">새 방을 만들어 보세요</p>
-          <p className="text-xs text-muted-foreground">
-            친구와 함께 플레이하려면 방을 생성하고 초대 링크를 공유하세요.
-          </p>
-        </div>
-        <Button
-          type="button"
-          aria-label="새 방 만들기"
-          onClick={onCreateRoomClick}
-          className="w-full md:w-auto"
-        >
-          방 생성하기
-        </Button>
-      </div>
+      <Card className="w-full border-border bg-background/95 shadow-lg backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
+        <CardContent className="flex flex-col gap-3 p-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold leading-tight">새 방을 만들어 보세요</p>
+            <p className="text-xs text-muted-foreground">
+              친구와 함께 플레이하려면 방을 생성하고 초대 링크를 공유하세요.
+            </p>
+          </div>
+          <Button
+            type="button"
+            aria-label="새 방 만들기"
+            onClick={onCreateRoomClick}
+            className="w-full md:w-auto"
+          >
+            방 생성하기
+          </Button>
+        </CardContent>
+      </Card>
     </motion.aside>
   );
 }

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { ComponentType } from 'react';
 
 import { cn } from '@/shared/lib/utils';
+import { Button, buttonVariants } from '@/shared/ui/button';
 
 interface NavigationItem {
   id: string;
@@ -32,7 +33,7 @@ function BottomNavigation({
 
   return (
     <div
-      className={cn('flex w-full items-center justify-between px-4 py-2 ', className)}
+      className={cn('flex w-full items-center justify-between px-4 py-2', className)}
       data-slot="app-shell:bottom-nav-container"
     >
       {items.map((item) => {
@@ -40,18 +41,20 @@ function BottomNavigation({
         const isActive = pathname === item.href;
 
         const buttonClasses = cn(
-          'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
-          'text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-          isActive && 'text-primary',
+          buttonVariants({ variant: 'ghost', size: 'sm' }),
+          'flex-1 gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
+          'h-auto min-h-9 text-muted-foreground data-[active=true]:text-primary',
           itemClassName,
           isActive && activeItemClassName,
         );
 
         if (item.onClick) {
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
+              variant="ghost"
+              size="sm"
               className={buttonClasses}
               aria-label={item.ariaLabel ?? item.label}
               onClick={item.onClick}
@@ -59,21 +62,25 @@ function BottomNavigation({
             >
               <Icon className="size-5" aria-hidden="true" />
               <span>{item.label}</span>
-            </button>
+            </Button>
           );
         }
 
         return (
-          <Link
+          <Button
             key={item.id}
-            href={item.href}
+            asChild
+            variant="ghost"
+            size="sm"
             className={buttonClasses}
             aria-label={item.ariaLabel ?? item.label}
             data-active={isActive}
           >
-            <Icon className="size-5" aria-hidden="true" />
-            <span>{item.label}</span>
-          </Link>
+            <Link href={item.href}>
+              <Icon className="size-5" aria-hidden="true" />
+              <span>{item.label}</span>
+            </Link>
+          </Button>
         );
       })}
     </div>

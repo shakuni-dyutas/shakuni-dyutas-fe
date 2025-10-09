@@ -23,6 +23,13 @@ widgets/
 - **Named Export**: default export 금지
 - **참조 방향**: shared, entities, features 참조 가능
 
+## Shadcn 베이스 컴포넌트 활용 가이드
+
+- BottomNavigation, CreateRoomCTA 등 공통 UI는 `shared/ui/button`, `shared/ui/card`에 정의된 shadcn 스타일 베이스 컴포넌트를 사용한다.
+- 레이아웃별 커스터마이징이 필요하면 베이스 컴포넌트의 `className`으로 Tailwind 유틸을 추가하고, 인터랙션/접근성 속성은 그대로 유지한다.
+- 애니메이션이 필요한 경우 베이스 컴포넌트를 래핑하거나 `Card` 내부에 `CardContent`를 활용해 구조를 분리한다.
+- 새로운 위젯에서 공통 스타일이 반복되면 shared/ui 계층에 래퍼를 추가한 뒤 위젯 문서에 사용 가이드를 기록한다.
+
 ## 예시
 
 ```typescript
