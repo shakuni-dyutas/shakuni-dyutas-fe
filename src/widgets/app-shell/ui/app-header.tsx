@@ -1,36 +1,52 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 
 import { cn } from '@/shared/lib/utils';
-
-const DEFAULT_HEADER_TITLE = 'Shakuni Dyutas';
+import { DEFAULT_TITLE_NODE } from '@/widgets/app-shell/model/app-header-default-config';
 
 interface AppHeaderProps {
-  leftSlot?: ReactNode;
-  centerSlot?: ReactNode;
-  rightSlot?: ReactNode;
+  leftItems?: ReactNode[];
+  centerItems?: ReactNode[];
+  rightItems?: ReactNode[];
   className?: string;
   leftClassName?: string;
   centerClassName?: string;
   rightClassName?: string;
 }
 
+function renderNodes(nodes: ReactNode[] | undefined, _slot: string) {
+  if (!nodes || nodes.length === 0) {
+    return null;
+  }
+
+  return Children.map(nodes, (node) => {
+    if (isValidElement(node) && node.key != null) {
+      return node;
+    }
+
+    return <Fragment>{node}</Fragment>;
+  });
+}
+
 function AppHeader({
-  leftSlot,
-  centerSlot,
-  rightSlot,
+  leftItems = [],
+  centerItems = [],
+  rightItems = [],
   className,
   leftClassName,
   centerClassName,
   rightClassName,
 }: AppHeaderProps) {
-  const resolvedCenterSlot = centerSlot ?? (
-    <span className="text-base font-semibold tracking-tight">{DEFAULT_HEADER_TITLE}</span>
+  const leftContent = renderNodes(leftItems, 'left');
+  const centerContent = renderNodes(
+    centerItems.length > 0 ? centerItems : [DEFAULT_TITLE_NODE],
+    'center',
   );
+  const rightContent = renderNodes(rightItems, 'right');
 
   return (
-    <div
+    <header
       className={cn('flex w-full items-center justify-between gap-4', 'md:px-2 md:py-1', className)}
       data-slot="app-shell:header"
     >
@@ -38,23 +54,23 @@ function AppHeader({
         className={cn('flex min-h-10 min-w-10 items-center gap-2', leftClassName)}
         data-slot="app-shell:header-left"
       >
-        {leftSlot}
+        {leftContent}
       </div>
 
       <div
-        className={cn('flex flex-1 items-center justify-center', centerClassName)}
+        className={cn('flex flex-1 items-center justify-center gap-3', centerClassName)}
         data-slot="app-shell:header-center"
       >
-        {resolvedCenterSlot}
+        {centerContent}
       </div>
 
       <div
         className={cn('flex min-h-10 min-w-10 items-center justify-end gap-3', rightClassName)}
         data-slot="app-shell:header-right"
       >
-        {rightSlot}
+        {rightContent}
       </div>
-    </div>
+    </header>
   );
 }
 
