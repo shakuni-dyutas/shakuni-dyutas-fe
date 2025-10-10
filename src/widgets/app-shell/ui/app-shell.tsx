@@ -26,12 +26,12 @@ function AppShell({
 }: AppShellProps) {
   return (
     <div
-      className={cn('bg-background text-foreground relative flex min-h-dvh flex-col', className)}
+      className={cn('relative flex min-h-dvh flex-col bg-background text-foreground', className)}
       style={APP_SHELL_SAFE_AREA_STYLE}
       data-slot="app-shell"
     >
       {headerSlot ? (
-        <header className="bg-background/80 sticky top-0 z-20 w-full">
+        <header className="sticky top-0 z-20 w-full bg-background/80">
           <div className="mx-auto flex w-full max-w-5xl items-center px-4 py-3 md:px-6 md:py-4">
             {headerSlot}
           </div>
@@ -57,7 +57,7 @@ function AppShell({
           className="fixed inset-x-0 bottom-0 z-30"
           data-slot="app-shell:bottom-nav"
         >
-          <div className="border-border bg-background/95 mx-auto w-full max-w-5xl border-t px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] md:px-6">
+          <div className="mx-auto w-full max-w-5xl border-border border-t bg-background/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] md:px-6">
             <div className="mx-auto flex w-full items-center justify-between gap-2">
               {bottomNavigationSlot}
             </div>

@@ -51,7 +51,7 @@ function BottomNavigation({
 
         const buttonClasses = cn(
           buttonVariants({ variant: 'ghost', size: 'sm' }),
-          'flex-1 gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
+          'flex-1 gap-1.5 rounded-full px-3 py-2 font-medium text-xs transition-colors',
           'h-auto min-h-9 text-muted-foreground data-[active=true]:text-primary',
           item.className,
           itemClassName,
@@ -112,7 +112,7 @@ function BottomNavigation({
           <div
             key={item.id}
             className={cn(
-              'text-muted-foreground flex flex-1 items-center justify-center rounded-full border border-transparent px-3 py-2 text-xs font-medium',
+              'flex flex-1 items-center justify-center rounded-full border border-transparent px-3 py-2 font-medium text-muted-foreground text-xs',
               item.className,
               itemClassName,
             )}

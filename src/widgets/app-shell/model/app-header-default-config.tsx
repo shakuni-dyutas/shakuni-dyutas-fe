@@ -18,7 +18,7 @@ interface AppHeaderDefaultItemsConfig {
   right?: ReactNode[];
 }
 
-const DEFAULT_TITLE_NODE = <span className="text-base font-semibold tracking-tight">Dyutas</span>;
+const DEFAULT_TITLE_NODE = <span className="font-semibold text-base tracking-tight">Dyutas</span>;
 
 export type { AppHeaderDefaultActionsConfig, AppHeaderDefaultItemsConfig, Toggleable };
 export { DEFAULT_TITLE_NODE };

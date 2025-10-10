@@ -53,7 +53,7 @@ function AppHeaderActionButton({
     >
       <RenderIcon aria-hidden className="size-5" />
       {showLabel ? (
-        <span className="ml-2 text-sm font-medium">{label ?? ariaLabel}</span>
+        <span className="ml-2 font-medium text-sm">{label ?? ariaLabel}</span>
       ) : (
         <span className="sr-only">{ariaLabel}</span>
       )}

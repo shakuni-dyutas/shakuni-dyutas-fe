@@ -43,7 +43,7 @@ function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
   return (
     <motion.aside
       className={cn(
-        'fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] left-1/2 z-40 w-full max-w-md -translate-x-1/2 md:max-w-lg',
+        '-translate-x-1/2 fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] left-1/2 z-40 w-full max-w-md md:max-w-lg',
         className,
       )}
       aria-label="방 생성 안내"
@@ -57,10 +57,10 @@ function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
       style={{ pointerEvents: isVisible ? 'auto' : 'none' }}
       data-slot="lobby:create-room-cta"
     >
-      <Card className="border-border bg-background/95 w-full shadow-lg backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
+      <Card className="w-full border-border bg-background/95 shadow-lg backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
         <CardContent className="flex flex-col gap-3 p-4 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <p className="text-sm leading-tight font-semibold">새 방을 만들어 보세요</p>
+            <p className="font-semibold text-sm leading-tight">새 방을 만들어 보세요</p>
             <p className="text-muted-foreground text-xs">
               친구와 함께 플레이하려면 방을 생성하고 초대 링크를 공유하세요.
             </p>

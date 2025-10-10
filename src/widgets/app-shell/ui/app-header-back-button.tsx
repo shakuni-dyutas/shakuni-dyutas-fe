@@ -51,7 +51,7 @@ function AppHeaderBackButton({
     >
       <ArrowLeft aria-hidden="true" className="size-5" />
       {showLabel ? (
-        <span className="ml-2 text-sm font-medium">뒤로가기</span>
+        <span className="ml-2 font-medium text-sm">뒤로가기</span>
       ) : (
         <span className="sr-only">뒤로가기</span>
       )}

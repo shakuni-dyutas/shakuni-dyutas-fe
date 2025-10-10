@@ -40,9 +40,9 @@ function GoogleLoginButton({
         {isLoading ? 'Google 로그인 중…' : 'Google 계정으로 계속하기'}
       </span>
       {isLoading ? (
-        <Loader2 aria-hidden="true" className="text-muted-foreground size-5 animate-spin" />
+        <Loader2 aria-hidden="true" className="size-5 animate-spin text-muted-foreground" />
       ) : (
-        <ArrowRight aria-hidden="true" className="text-muted-foreground size-5" />
+        <ArrowRight aria-hidden="true" className="size-5 text-muted-foreground" />
       )}
     </Button>
   );
