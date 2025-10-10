@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-
+import { ROUTE_PATHS } from '@/shared/config/constants';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -15,6 +16,7 @@ interface CreateRoomCTAProps {
 }
 
 function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollYRef = useRef(0);
 
@@ -68,7 +70,10 @@ function CreateRoomCTA({ onCreateRoomClick, className }: CreateRoomCTAProps) {
           <Button
             type="button"
             aria-label="새 방 만들기"
-            onClick={onCreateRoomClick}
+            onClick={() => {
+              onCreateRoomClick?.();
+              router.push(ROUTE_PATHS.ROOM_CREATE);
+            }}
             className="w-full md:w-auto"
           >
             방 생성하기
