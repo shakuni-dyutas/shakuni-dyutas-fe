@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
 
+import { ROUTE_PATHS } from '@/shared/config/constants';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 
@@ -37,7 +38,14 @@ function AppHeaderBackButton({
       return;
     }
 
-    router.back();
+    const canGoBack = typeof window !== 'undefined' && window.history.length > 1;
+
+    if (canGoBack) {
+      router.back();
+      return;
+    }
+
+    router.replace(ROUTE_PATHS.HOME);
   };
 
   return (

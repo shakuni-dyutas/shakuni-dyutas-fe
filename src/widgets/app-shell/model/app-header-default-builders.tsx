@@ -12,16 +12,18 @@ import type {
 } from './app-header-default-config';
 import { DEFAULT_TITLE_NODE } from './app-header-default-config';
 
-function resolveToggle<T>(option?: Toggleable<T>) {
+function resolveToggle<T extends object>(
+  option?: Toggleable<T>,
+): { enabled: boolean; props: Partial<T> } {
   if (!option) {
-    return { enabled: true, props: {} as T };
+    return { enabled: true, props: {} as Partial<T> };
   }
 
-  const { enabled, ...rest } = option as Toggleable<T>;
+  const { enabled = true, ...rest } = option;
 
   return {
-    enabled: enabled !== false,
-    props: rest as T,
+    enabled,
+    props: rest as Partial<T>,
   };
 }
 
