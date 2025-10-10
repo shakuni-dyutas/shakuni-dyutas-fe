@@ -46,7 +46,7 @@ function AppShell({
         )}
         data-slot="app-shell:main"
       >
-        <div className={cn('mx-auto flex w-full max-w-3xl flex-col gap-6', contentClassName)}>
+        <div className={cn('mx-auto flex w-full max-w-5xl flex-col gap-6', contentClassName)}>
           {children}
         </div>
       </main>
@@ -54,11 +54,13 @@ function AppShell({
       {bottomNavigationSlot ? (
         <nav
           aria-label="주요 내비게이션"
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] pt-3 md:px-6"
+          className="fixed inset-x-0 bottom-0 z-30"
           data-slot="app-shell:bottom-nav"
         >
-          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-2">
-            {bottomNavigationSlot}
+          <div className="mx-auto w-full max-w-5xl border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] pt-3 md:px-6">
+            <div className="mx-auto flex w-full items-center justify-between gap-2">
+              {bottomNavigationSlot}
+            </div>
           </div>
         </nav>
       ) : null}
