@@ -40,13 +40,13 @@ function LoginPanelContent({
         className="rounded-full border border-border/40 bg-background object-cover"
       />
 
-      <p className="text-sm text-muted-foreground">AI 기반 논쟁 게임 플랫폼 Dyutas</p>
+      <p className="text-muted-foreground text-sm">AI 기반 논쟁 게임 플랫폼 Dyutas</p>
 
       <div className="w-full space-y-3">
         <GoogleLoginButton onClick={onClick} isLoading={isLoading} disabled={isDisabled} />
 
         {errorMessage ? (
-          <p className="text-sm text-destructive" role="alert" aria-live="polite">
+          <p className="text-destructive text-sm" role="alert" aria-live="polite">
             {errorMessage}
           </p>
         ) : null}

@@ -1,5 +1,7 @@
 import { LoginPage } from '@/screens/login/ui/login-page';
 import { sanitizeRedirectPath } from '@/shared/lib/sanitize-redirect-path';
+import { AppHeaderDefault } from '@/widgets/app-shell/ui/app-header-default';
+import { AppShell } from '@/widgets/app-shell/ui/app-shell';
 
 type LoginRouteSearchParams = Record<string, string | string[] | undefined>;
 
@@ -14,7 +16,11 @@ async function LoginRoute({ searchParams }: LoginRouteProps) {
 
   const sanitizedRedirectPath = sanitizeRedirectPath(redirectPath);
 
-  return <LoginPage redirectPath={sanitizedRedirectPath} />;
+  return (
+    <AppShell headerSlot={<AppHeaderDefault />}>
+      <LoginPage redirectPath={sanitizedRedirectPath} />
+    </AppShell>
+  );
 }
 
 export { LoginRoute as default };

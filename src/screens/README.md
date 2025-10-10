@@ -46,3 +46,4 @@ export function UserManagementPage() {
 
 - Next.js App Router의 `app/` 디렉토리에서 이 screens 컴포넌트들을 import하여 사용
 - 실제 라우팅은 `app/` 디렉토리에서 처리
+
