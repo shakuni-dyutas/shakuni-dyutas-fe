@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Home, PlusCircle, UserRound } from 'lucide-react';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -40,6 +41,24 @@ describe('BottomNavigation', () => {
 
     const button = screen.getByRole('button', { name: '방 생성' });
     expect(button.tagName).toBe('BUTTON');
+  });
+
+  test('onClick이 있는 항목은 콜백을 호출한다', async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    const items: NavigationItem[] = [
+      {
+        id: 'create',
+        label: '방 생성',
+        onClick: handler,
+      },
+    ];
+
+    render(<BottomNavigation items={items} />);
+
+    await user.click(screen.getByRole('button', { name: '방 생성' }));
+
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 });
 

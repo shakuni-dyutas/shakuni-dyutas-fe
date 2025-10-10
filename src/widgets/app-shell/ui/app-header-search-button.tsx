@@ -1,12 +1,8 @@
 'use client';
 
 import { Loader2, Search } from 'lucide-react';
-import type { MouseEvent } from 'react';
 
-import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui/button';
-
-import { ICON_BUTTON_BASE_CLASS } from '../lib/action-styles';
+import { AppHeaderActionButton } from './app-header-action-button';
 
 interface AppHeaderSearchButtonProps {
   onClick?: () => void;
@@ -25,36 +21,18 @@ function AppHeaderSearchButton({
   showLabel = false,
   className,
 }: AppHeaderSearchButtonProps) {
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (disabled || loading) {
-      return;
-    }
-
-    onClick?.();
-  };
-
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={handleClick}
-      aria-label={ariaLabel}
-      disabled={disabled || loading}
-      aria-busy={loading}
-      className={cn(ICON_BUTTON_BASE_CLASS, 'bg-secondary/30 hover:bg-secondary/60', className)}
-    >
-      {loading ? (
-        <Loader2 aria-hidden="true" className="size-5 animate-spin" />
-      ) : (
-        <Search aria-hidden="true" className="size-5" />
-      )}
-      {showLabel ? (
-        <span className="ml-2 text-sm font-medium">검색</span>
-      ) : (
-        <span className="sr-only">검색 열기</span>
-      )}
-    </Button>
+    <AppHeaderActionButton
+      icon={Search}
+      loadingIcon={Loader2}
+      onClick={onClick}
+      disabled={disabled}
+      loading={loading}
+      ariaLabel={ariaLabel}
+      label="검색"
+      showLabel={showLabel}
+      className={className}
+    />
   );
 }
 
