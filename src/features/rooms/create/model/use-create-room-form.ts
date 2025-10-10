@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo } from 'react';
 import { type FieldArrayWithId, type UseFormReturn, useFieldArray, useForm } from 'react-hook-form';
 import {
-  createRoomFactionDefaultValues,
-  createRoomFormDefaultValues,
+  getCreateRoomFactionDefaultValues,
+  getCreateRoomFormDefaultValues,
 } from './create-room-form-defaults';
 import {
   CREATE_ROOM_MAX_FACTION_COUNT,
   CREATE_ROOM_MIN_FACTION_COUNT,
   type CreateRoomFormValues,
   type CreateRoomVisibility,
+  createRoomFormSchema,
 } from './create-room-form-schema';
 
 interface UseCreateRoomFormReturn {
@@ -25,9 +27,12 @@ interface UseCreateRoomFormReturn {
 }
 
 function useCreateRoomForm(): UseCreateRoomFormReturn {
+  const defaultValues = useMemo(() => getCreateRoomFormDefaultValues(), []);
+
   const form = useForm<CreateRoomFormValues>({
-    defaultValues: createRoomFormDefaultValues,
+    defaultValues,
     mode: 'onChange',
+    resolver: zodResolver(createRoomFormSchema),
   });
 
   const factionArray = useFieldArray({
@@ -36,38 +41,51 @@ function useCreateRoomForm(): UseCreateRoomFormReturn {
   });
 
   const visibility = form.watch('visibility');
+  const factions = form.watch('factions');
 
   useEffect(() => {
     if (visibility === 'public' && form.getValues('password')) {
-      form.setValue('password', '', { shouldDirty: true });
+      form.setValue('password', '', { shouldDirty: true, shouldValidate: true });
+      form.clearErrors('password');
     }
   }, [form, visibility]);
 
   const appendFaction = () => {
-    if (factionArray.fields.length >= CREATE_ROOM_MAX_FACTION_COUNT) {
+    const currentCount = form.getValues('factions').length;
+    if (currentCount >= CREATE_ROOM_MAX_FACTION_COUNT) {
       return;
     }
 
-    factionArray.append({ ...createRoomFactionDefaultValues }, { shouldFocus: false });
+    factionArray.append(getCreateRoomFactionDefaultValues(), { shouldFocus: false });
+    form.trigger('factions');
   };
 
   const removeFaction = (index: number) => {
-    if (factionArray.fields.length <= CREATE_ROOM_MIN_FACTION_COUNT) {
+    const currentCount = form.getValues('factions').length;
+    if (currentCount <= CREATE_ROOM_MIN_FACTION_COUNT) {
       return;
     }
 
     factionArray.remove(index);
+    form.trigger('factions');
   };
 
   const setVisibility = (nextVisibility: CreateRoomVisibility) => {
-    form.setValue('visibility', nextVisibility, { shouldDirty: true });
+    form.setValue('visibility', nextVisibility, { shouldDirty: true, shouldValidate: true });
+
+    if (nextVisibility === 'private') {
+      return;
+    }
+
+    if (form.getValues('password')) {
+      form.setValue('password', '', { shouldDirty: true, shouldValidate: true });
+      form.clearErrors('password');
+    }
   };
 
   const resetForm = () => {
-    form.reset({
-      ...createRoomFormDefaultValues,
-      factions: createRoomFormDefaultValues.factions.map((faction) => ({ ...faction })),
-    });
+    const resetValues = getCreateRoomFormDefaultValues();
+    form.reset(resetValues, { keepDefaultValues: false });
   };
 
   return {
@@ -76,7 +94,7 @@ function useCreateRoomForm(): UseCreateRoomFormReturn {
     appendFaction,
     removeFaction,
     isPrivateRoom: visibility === 'private',
-    canAppendFaction: factionArray.fields.length < CREATE_ROOM_MAX_FACTION_COUNT,
+    canAppendFaction: factions.length < CREATE_ROOM_MAX_FACTION_COUNT,
     setVisibility,
     resetForm,
   };

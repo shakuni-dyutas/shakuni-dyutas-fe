@@ -29,6 +29,11 @@ function CreateRoomPage() {
     resetForm,
   } = useCreateRoomForm();
 
+  const factionListErrorMessage =
+    form.formState.errors.factions?.root?.message ??
+    form.formState.errors.factions?.message ??
+    null;
+
   const handleSubmit = form.handleSubmit(() => {
     // TODO(T-M1-4-4): API 연동 및 실제 제출 동작을 구현합니다.
   });
@@ -155,7 +160,10 @@ function CreateRoomPage() {
                               type="radio"
                               value="public"
                               checked={field.value === 'public'}
-                              onChange={() => setVisibility('public')}
+                              onChange={() => {
+                                field.onChange('public');
+                                setVisibility('public');
+                              }}
                               className="mt-1 h-4 w-4 border-primary text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             />
                             <span className="space-y-1">
@@ -173,7 +181,10 @@ function CreateRoomPage() {
                               type="radio"
                               value="private"
                               checked={field.value === 'private'}
-                              onChange={() => setVisibility('private')}
+                              onChange={() => {
+                                field.onChange('private');
+                                setVisibility('private');
+                              }}
                               className="mt-1 h-4 w-4 border-primary text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             />
                             <span className="space-y-1">
@@ -231,6 +242,7 @@ function CreateRoomPage() {
                     variant="secondary"
                     onClick={appendFaction}
                     disabled={!canAppendFaction}
+                    aria-disabled={!canAppendFaction}
                   >
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> 진영 추가
                   </Button>
@@ -299,13 +311,21 @@ function CreateRoomPage() {
                 <p className="text-muted-foreground text-xs">
                   진영은 최대 {CREATE_ROOM_MAX_FACTION_COUNT}개까지 추가할 수 있습니다.
                 </p>
+
+                {factionListErrorMessage ? (
+                  <p className="text-destructive text-sm">{factionListErrorMessage}</p>
+                ) : null}
               </section>
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="ghost" onClick={resetForm}>
                   초기화
                 </Button>
-                <Button type="submit" className="min-w-[120px]">
+                <Button
+                  type="submit"
+                  className="min-w-[120px]"
+                  disabled={form.formState.isSubmitting}
+                >
                   방 생성
                 </Button>
               </div>

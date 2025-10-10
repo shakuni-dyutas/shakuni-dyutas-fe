@@ -12,7 +12,21 @@ const createRoomFormDefaultValues: CreateRoomFormValues = {
   minBetPoint: '',
   visibility: 'public',
   password: '',
-  factions: [createRoomFactionDefaultValues],
+  factions: [{ ...createRoomFactionDefaultValues }],
 };
 
-export { createRoomFactionDefaultValues, createRoomFormDefaultValues };
+const getCreateRoomFactionDefaultValues = (): CreateRoomFactionValues => ({
+  ...createRoomFactionDefaultValues,
+});
+
+const getCreateRoomFormDefaultValues = (): CreateRoomFormValues => ({
+  ...createRoomFormDefaultValues,
+  factions: createRoomFormDefaultValues.factions.map((faction) => ({ ...faction })),
+});
+
+export {
+  createRoomFactionDefaultValues,
+  createRoomFormDefaultValues,
+  getCreateRoomFactionDefaultValues,
+  getCreateRoomFormDefaultValues,
+};
