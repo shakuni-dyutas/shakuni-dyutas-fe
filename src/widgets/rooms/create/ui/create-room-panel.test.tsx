@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { CREATE_ROOM_MAX_FACTION_COUNT } from '@/features/rooms/create/model/create-room-form-schema';
 import { server } from '@/shared/mocks/server';
-import { CreateRoomPage } from './create-room-page';
+import { CreateRoomPanel } from './create-room-panel';
 
 const replaceMock = vi.fn();
 const toastSuccessMock = vi.fn();
@@ -37,12 +37,12 @@ function renderWithQueryClient() {
 
   return render(
     <QueryClientProvider client={client}>
-      <CreateRoomPage />
+      <CreateRoomPanel />
     </QueryClientProvider>,
   );
 }
 
-describe('CreateRoomPage', () => {
+describe('CreateRoomPanel', () => {
   beforeEach(() => {
     replaceMock.mockReset();
     toastSuccessMock.mockReset();

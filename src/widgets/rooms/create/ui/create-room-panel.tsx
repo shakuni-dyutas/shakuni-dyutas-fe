@@ -19,7 +19,7 @@ import {
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 
-function CreateRoomPage() {
+function CreateRoomPanel() {
   const {
     form,
     factionFields,
@@ -361,4 +361,4 @@ function CreateRoomPage() {
   );
 }
 
-export { CreateRoomPage };
+export { CreateRoomPanel };
