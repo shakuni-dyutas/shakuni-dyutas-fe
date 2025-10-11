@@ -11,6 +11,8 @@ import {
 import { runtimeEnv } from '@/shared/config/env';
 import { logDebug } from '@/shared/lib/logger';
 import { ReactQueryProvider } from '@/shared/providers/react-query-provider';
+import { ThemeProvider } from '@/shared/providers/theme-provider';
+import { Toaster } from '@/shared/ui/sonner';
 
 export function AppProvider({ children }: PropsWithChildren) {
   useEffect(() => {
@@ -39,10 +41,17 @@ export function AppProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
+  const content = (
+    <ThemeProvider>
+      <ReactQueryProvider>{children}</ReactQueryProvider>
+      <Toaster position="top-center" richColors closeButton />
+    </ThemeProvider>
+  );
+
   if (!IS_GOOGLE_CLIENT_CONFIGURED) {
     logDebug('GoogleOAuthProvider', 'client id가 없어 로그인 기능이 비활성화됩니다.');
 
-    return <ReactQueryProvider>{children}</ReactQueryProvider>;
+    return content;
   }
 
   return (
@@ -52,7 +61,7 @@ export function AppProvider({ children }: PropsWithChildren) {
         logDebug('GoogleOAuthProvider', 'Google Identity Services 스크립트 로드에 실패했어요.');
       }}
     >
-      <ReactQueryProvider>{children}</ReactQueryProvider>
+      {content}
     </GoogleOAuthProvider>
   );
 }

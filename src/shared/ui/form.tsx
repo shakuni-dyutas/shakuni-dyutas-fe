@@ -79,17 +79,31 @@ function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
+interface FormLabelProps extends React.ComponentProps<typeof LabelPrimitive.Root> {
+  required?: boolean;
+}
+
+function FormLabel({ className, required = false, children, ...props }: FormLabelProps) {
   const { error, formItemId } = useFormField();
 
   return (
     <Label
       data-slot="form-label"
       data-error={!!error}
-      className={cn('data-[error=true]:text-destructive', className)}
+      className={cn(
+        'flex select-none items-center gap-2 font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 data-[error=true]:text-destructive',
+        className,
+      )}
       htmlFor={formItemId}
       {...props}
-    />
+    >
+      {children}
+      {required ? (
+        <span className="text-destructive text-xs" aria-hidden="true">
+          *
+        </span>
+      ) : null}
+    </Label>
   );
 }
 

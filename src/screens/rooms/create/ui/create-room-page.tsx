@@ -1,8 +1,10 @@
 'use client';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { CREATE_ROOM_MAX_FACTION_COUNT } from '@/features/rooms/create/model/create-room-form-schema';
 import { useCreateRoomForm } from '@/features/rooms/create/model/use-create-room-form';
+import { useCreateRoomMutation } from '@/features/rooms/create/model/use-create-room-mutation';
+import { logDebug } from '@/shared/lib/logger';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 import {
@@ -28,14 +30,22 @@ function CreateRoomPage() {
     setVisibility,
     resetForm,
   } = useCreateRoomForm();
+  const { createRoom, isCreatingRoom } = useCreateRoomMutation();
+  const isSubmitting = form.formState.isSubmitting || isCreatingRoom;
+  const isFormValid = form.formState.isValid;
+  const isSubmitDisabled = isSubmitting || !isFormValid;
 
   const factionListErrorMessage =
     form.formState.errors.factions?.root?.message ??
     form.formState.errors.factions?.message ??
     null;
 
-  const handleSubmit = form.handleSubmit(() => {
-    // TODO(T-M1-4-4): API 연동 및 실제 제출 동작을 구현합니다.
+  const handleSubmit = form.handleSubmit(async (values) => {
+    try {
+      await createRoom(values);
+    } catch (error) {
+      logDebug('CreateRoom', '방 생성 제출 중 오류가 발생했어요.', error);
+    }
   });
 
   return (
@@ -50,7 +60,12 @@ function CreateRoomPage() {
       <Card>
         <CardContent className="space-y-8 p-6 md:p-8">
           <Form {...form}>
-            <form className="space-y-10" onSubmit={handleSubmit} noValidate>
+            <form
+              className="space-y-10"
+              data-testid="create-room-form"
+              onSubmit={handleSubmit}
+              noValidate
+            >
               <section className="space-y-4">
                 <div className="space-y-2">
                   <h2 className="font-semibold text-lg">기본 정보</h2>
@@ -64,7 +79,7 @@ function CreateRoomPage() {
                   name="title"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>방 제목</FormLabel>
+                      <FormLabel required>방 제목</FormLabel>
                       <FormControl>
                         <Input placeholder="예) 전설의 도박장" {...field} />
                       </FormControl>
@@ -101,7 +116,7 @@ function CreateRoomPage() {
                     name="timeLimitMinutes"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>제한 시간(분)</FormLabel>
+                        <FormLabel required>제한 시간(분)</FormLabel>
                         <FormControl>
                           <Input type="text" inputMode="numeric" placeholder="예) 30" {...field} />
                         </FormControl>
@@ -120,7 +135,7 @@ function CreateRoomPage() {
                     name="minBetPoint"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>최소 배팅 포인트</FormLabel>
+                        <FormLabel required>최소 배팅 포인트</FormLabel>
                         <FormControl>
                           <Input type="text" inputMode="numeric" placeholder="예) 100" {...field} />
                         </FormControl>
@@ -274,7 +289,7 @@ function CreateRoomPage() {
                           name={`factions.${index}.title` as const}
                           render={({ field: factionField, fieldState }) => (
                             <FormItem>
-                              <FormLabel>진영 이름</FormLabel>
+                              <FormLabel required>진영 이름</FormLabel>
                               <FormControl>
                                 <Input placeholder="예) 사신단" {...factionField} />
                               </FormControl>
@@ -290,7 +305,7 @@ function CreateRoomPage() {
                           name={`factions.${index}.description` as const}
                           render={({ field: factionField, fieldState }) => (
                             <FormItem>
-                              <FormLabel>진영 설명</FormLabel>
+                              <FormLabel required>진영 설명</FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="진영에 대한 역할이나 특징을 입력하세요."
@@ -323,10 +338,19 @@ function CreateRoomPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="min-w-[120px]"
-                  disabled={form.formState.isSubmitting}
+                  className="min-w-[120px] gap-2"
+                  disabled={isSubmitDisabled}
+                  aria-busy={isSubmitting}
+                  aria-disabled={isSubmitDisabled}
                 >
-                  방 생성
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                      <span aria-live="polite">방 생성 중…</span>
+                    </>
+                  ) : (
+                    <span>방 생성</span>
+                  )}
                 </Button>
               </div>
             </form>
