@@ -10,6 +10,7 @@ import {
 } from '@/features/auth/google/config/google-oauth-config';
 import { runtimeEnv } from '@/shared/config/env';
 import { logDebug } from '@/shared/lib/logger';
+import { OverlayRootProvider } from '@/shared/providers/overlay-provider';
 import { ReactQueryProvider } from '@/shared/providers/react-query-provider';
 import { ThemeProvider } from '@/shared/providers/theme-provider';
 import { Toaster } from '@/shared/ui/sonner';
@@ -42,10 +43,12 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, []);
 
   const content = (
-    <ThemeProvider>
-      <ReactQueryProvider>{children}</ReactQueryProvider>
-      <Toaster position="top-center" richColors closeButton />
-    </ThemeProvider>
+    <OverlayRootProvider>
+      <ThemeProvider>
+        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <Toaster position="top-center" richColors closeButton />
+      </ThemeProvider>
+    </OverlayRootProvider>
   );
 
   if (!IS_GOOGLE_CLIENT_CONFIGURED) {

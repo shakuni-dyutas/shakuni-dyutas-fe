@@ -7,6 +7,7 @@ import { useCreateRoomMutation } from '@/features/rooms/create/model/use-create-
 import { logDebug } from '@/shared/lib/logger';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
+import { openConfirmDialog } from '@/shared/ui/confirm-dialog';
 import {
   Form,
   FormControl,
@@ -41,6 +42,17 @@ function CreateRoomPanel() {
     null;
 
   const handleSubmit = form.handleSubmit(async (values) => {
+    const isConfirmed = await openConfirmDialog({
+      title: '방을 생성할까요?',
+      description: '입력한 정보로 새 방을 만듭니다.',
+      confirmLabel: '생성하기',
+      cancelLabel: '취소',
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       await createRoom(values);
     } catch (error) {

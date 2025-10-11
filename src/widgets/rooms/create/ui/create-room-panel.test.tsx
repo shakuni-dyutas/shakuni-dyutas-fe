@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { CREATE_ROOM_MAX_FACTION_COUNT } from '@/features/rooms/create/model/create-room-form-schema';
 import { server } from '@/shared/mocks/server';
+import { OverlayRootProvider } from '@/shared/providers/overlay-provider';
 import { CreateRoomPanel } from './create-room-panel';
 
 const replaceMock = vi.fn();
@@ -36,9 +37,11 @@ function renderWithQueryClient() {
   activeQueryClients.push(client);
 
   return render(
-    <QueryClientProvider client={client}>
-      <CreateRoomPanel />
-    </QueryClientProvider>,
+    <OverlayRootProvider>
+      <QueryClientProvider client={client}>
+        <CreateRoomPanel />
+      </QueryClientProvider>
+    </OverlayRootProvider>,
   );
 }
 
@@ -169,6 +172,11 @@ describe('CreateRoomPanel', () => {
 
     await user.click(submitButton);
 
+    const confirmDialog = await screen.findByRole('alertdialog');
+    expect(confirmDialog).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '생성하기' }));
+
     await waitFor(() => {
       expect(toastSuccessMock).toHaveBeenCalledWith('방 생성이 완료되었어요.');
     });
@@ -204,10 +212,45 @@ describe('CreateRoomPanel', () => {
 
     await user.click(submitButton);
 
+    await screen.findByRole('alertdialog');
+
+    await user.click(screen.getByRole('button', { name: '생성하기' }));
+
     await waitFor(() => {
       expect(toastErrorMock).toHaveBeenCalledWith('방 생성에 실패했어요.');
     });
 
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  test('제출 확인 모달에서 취소하면 방 생성 흐름을 중단한다', async () => {
+    const user = userEvent.setup();
+    renderWithQueryClient();
+
+    await user.type(screen.getByLabelText(/방 제목/), '취소 테스트 방');
+    await user.type(screen.getByLabelText(/제한 시간/), '15');
+    await user.type(screen.getByLabelText(/최소 배팅 포인트/), '50');
+    await user.type(screen.getByLabelText(/진영 이름/), '진영 취소');
+    await user.type(screen.getByLabelText(/진영 설명/), '설명');
+
+    const submitButton = screen.getByRole('button', { name: '방 생성' });
+    expect(submitButton).toBeEnabled();
+
+    await user.click(submitButton);
+
+    const confirmDialog = await screen.findByRole('alertdialog');
+    expect(confirmDialog).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '취소' }));
+
+    await waitFor(() => {
+      expect(toastSuccessMock).not.toHaveBeenCalled();
+      expect(toastErrorMock).not.toHaveBeenCalled();
+      expect(replaceMock).not.toHaveBeenCalled();
+    });
   });
 });

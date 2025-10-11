@@ -1,6 +1,7 @@
-import { HttpResponse, http } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 
 const ROOM_CREATE_ENDPOINT = '*/rooms';
+const ROOM_CREATION_DELAY_MS = 1000;
 
 export const roomsHandlers = [
   http.post(ROOM_CREATE_ENDPOINT, async ({ request }) => {
@@ -16,6 +17,8 @@ export const roomsHandlers = [
         },
       );
     }
+
+    await delay(ROOM_CREATION_DELAY_MS);
 
     return HttpResponse.json(
       {
