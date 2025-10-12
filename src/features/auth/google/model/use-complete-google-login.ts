@@ -5,9 +5,9 @@ import { HTTPError } from 'ky';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { resolveHttpErrorMessage } from '@/features/auth/google/lib/resolve-http-error-message';
 import { resolveRedirectPath } from '@/features/auth/google/lib/resolve-redirect-path';
 import { completeGoogleLogin } from '@/features/auth/session/model/session-service';
+import { resolveHttpErrorMessage } from '@/shared/lib/http/resolve-http-error-message';
 import { logDebug } from '@/shared/lib/logger';
 
 const LOGIN_ERROR_MESSAGES = {
@@ -43,7 +43,10 @@ function useCompleteGoogleLogin() {
       }
 
       if (error instanceof HTTPError) {
-        const resolvedMessage = await resolveHttpErrorMessage(error);
+        const resolvedMessage = await resolveHttpErrorMessage(error, {
+          namespace: 'GoogleOAuth',
+          parseErrorLogMessage: '로그인 응답 파싱에 실패했어요.',
+        });
         logDebug('GoogleOAuth', 'HTTP 오류 응답을 수신했어요.', error);
         setErrorMessage(resolvedMessage ?? LOGIN_ERROR_MESSAGES.DEFAULT);
         return;

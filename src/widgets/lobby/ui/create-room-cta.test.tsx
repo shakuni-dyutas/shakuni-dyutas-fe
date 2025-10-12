@@ -1,8 +1,16 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-
+import { ROUTE_PATHS } from '@/shared/config/constants';
 import { CreateRoomCTA } from './create-room-cta';
+
+const mockPush = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
 
 const setScrollY = (value: number) => {
   Object.defineProperty(window, 'scrollY', {
@@ -14,6 +22,7 @@ const setScrollY = (value: number) => {
 describe('CreateRoomCTA', () => {
   beforeEach(() => {
     setScrollY(0);
+    mockPush.mockClear();
   });
 
   test('최상단에서는 CTA가 표시되고 클릭 이벤트가 호출된다', async () => {
@@ -28,6 +37,19 @@ describe('CreateRoomCTA', () => {
     await user.click(button);
 
     expect(onCreateRoomClick).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith(ROUTE_PATHS.ROOM_CREATE);
+  });
+
+  test('기본 클릭 시 방 생성 페이지로 이동한다', async () => {
+    const user = userEvent.setup();
+
+    render(<CreateRoomCTA />);
+
+    const button = screen.getByRole('button', { name: '새 방 만들기' });
+
+    await user.click(button);
+
+    expect(mockPush).toHaveBeenCalledWith(ROUTE_PATHS.ROOM_CREATE);
   });
 
   test('스크롤이 내려가면 CTA가 숨겨지고 다시 올리면 나타난다', async () => {
