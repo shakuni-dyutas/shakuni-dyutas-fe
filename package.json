@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start",
+    "start": "next start -p 8070",
     "lint": "biome lint .",
     "lint:eslint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "format": "biome format --write .",
