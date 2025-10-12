@@ -1,6 +1,7 @@
 // Room domain types (entities)
 
-export type RoomStatus = 'active' | 'ended' | 'new' | 'hot';
+// 실제 도메인 상태만 표현
+export type RoomStatus = 'active' | 'ended';
 
 export interface Room {
   id: string;
@@ -18,8 +19,10 @@ export interface Room {
   created_at: string; // ISO datetime
 }
 
+// 뷰 탭(파생 라벨)과 정렬/검색을 포함한 필터
 export interface RoomFilters {
-  status?: RoomStatus;
+  // 파생 탭: active|hot|new|ended
+  view?: 'active' | 'hot' | 'new' | 'ended';
   search?: string;
   sort?: 'latest' | 'betting' | 'participants';
 }
