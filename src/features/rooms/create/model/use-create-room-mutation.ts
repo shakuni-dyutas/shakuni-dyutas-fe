@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 
 import type { CreateRoomRequest } from '@/features/rooms/create/api/create-room';
 import { createRoom } from '@/features/rooms/create/api/create-room';
-import { resolveCreateRoomErrorMessage } from '@/features/rooms/create/lib/resolve-create-room-error-message';
 import { ROUTE_PATHS } from '@/shared/config/constants';
+import { resolveHttpErrorMessage } from '@/shared/lib/http/resolve-http-error-message';
 import { logDebug } from '@/shared/lib/logger';
 
 import type { CreateRoomFormValues } from './create-room-form-schema';
@@ -51,7 +51,10 @@ function useCreateRoomMutation() {
     },
     onError: async (error) => {
       if (error instanceof HTTPError) {
-        const resolvedMessage = await resolveCreateRoomErrorMessage(error);
+        const resolvedMessage = await resolveHttpErrorMessage(error, {
+          namespace: 'CreateRoom',
+          parseErrorLogMessage: '방 생성 오류 응답 파싱에 실패했어요.',
+        });
         toast.error(resolvedMessage ?? CREATE_ROOM_ERROR_MESSAGE);
         return;
       }

@@ -70,7 +70,9 @@ const createRoomFormSchema = z
       numericMessage: '최소 배팅 포인트는 숫자만 입력해 주세요.',
       minMessage: '최소 배팅 포인트는 1 이상이어야 합니다.',
     }),
-    visibility: z.enum(['public', 'private'], '공개 여부를 선택해 주세요.'),
+    visibility: z.enum(['public', 'private'], {
+      error: '공개 여부를 선택해 주세요.',
+    }),
     password: z.string().trim().max(100, '비밀번호는 100자 이하로 입력해 주세요.'),
     factions: z
       .array(createRoomFactionSchema)

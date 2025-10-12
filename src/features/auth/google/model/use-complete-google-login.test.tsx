@@ -3,10 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { HTTPError } from 'ky';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-
-import { resolveHttpErrorMessage } from '@/features/auth/google/lib/resolve-http-error-message';
 import { resolveRedirectPath } from '@/features/auth/google/lib/resolve-redirect-path';
 import { useCompleteGoogleLogin } from '@/features/auth/google/model/use-complete-google-login';
+import { resolveHttpErrorMessage } from '@/shared/lib/http/resolve-http-error-message';
 
 type WrapperProps = {
   children: ReactNode;

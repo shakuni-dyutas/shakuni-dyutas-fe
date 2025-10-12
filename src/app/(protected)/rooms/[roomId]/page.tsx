@@ -11,13 +11,11 @@ interface RoomDetailRouteProps {
 }
 
 async function RoomDetailRoute({ params }: RoomDetailRouteProps) {
-  const { roomId: encodedRoomId } = await params;
+  const { roomId } = await params;
 
-  if (!encodedRoomId) {
+  if (!roomId) {
     notFound();
   }
-
-  const roomId = decodeURIComponent(encodedRoomId);
 
   return (
     <AppShell headerSlot={<AppHeaderDefault title="방 상세" />}>
