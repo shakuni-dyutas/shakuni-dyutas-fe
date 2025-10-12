@@ -139,9 +139,12 @@ export const roomsHandlers = [
       { status: 201 },
     );
   }),
+  
   http.get('/api/rooms', ({ request }) => {
     const url = new URL(request.url);
     const filtered = applyFilters(MOCK_ROOMS, url.searchParams);
     return HttpResponse.json({ rooms: filtered });
   }),
 ];
+
+
