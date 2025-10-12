@@ -8,6 +8,8 @@ RUN npm ci
 
 COPY . .
 
+RUN npm run build
+
 EXPOSE 8070
 
 CMD ["npm", "start"]
