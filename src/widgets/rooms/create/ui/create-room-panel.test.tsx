@@ -57,6 +57,7 @@ describe('CreateRoomPanel', () => {
       client.clear();
     });
     activeQueryClients.length = 0;
+    server.resetHandlers();
   });
 
   test('기본 섹션과 필드를 렌더링한다', () => {
@@ -183,6 +184,39 @@ describe('CreateRoomPanel', () => {
 
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith('/rooms/room-1234');
+    });
+  });
+
+  test('redirectPath가 없으면 roomId 기반 경로로 이동한다', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/rooms', async () =>
+        HttpResponse.json(
+          {
+            roomId: 'room-5678',
+          },
+          { status: 201 },
+        ),
+      ),
+    );
+
+    renderWithQueryClient();
+
+    await user.type(screen.getByLabelText(/방 제목/), '기본 경로 테스트');
+    await user.type(screen.getByLabelText(/제한 시간/), '20');
+    await user.type(screen.getByLabelText(/최소 배팅 포인트/), '50');
+    await user.type(screen.getByLabelText(/진영 이름/), '기본 진영');
+    await user.type(screen.getByLabelText(/진영 설명/), '설명');
+
+    await user.click(screen.getByRole('button', { name: '방 생성' }));
+    await user.click(await screen.findByRole('button', { name: '생성하기' }));
+
+    await waitFor(() => {
+      expect(toastSuccessMock).toHaveBeenCalledWith('방 생성이 완료되었어요.');
+    });
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith('/rooms/room-5678');
     });
   });
 

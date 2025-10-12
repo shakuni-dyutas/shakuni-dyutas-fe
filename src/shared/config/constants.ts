@@ -18,6 +18,9 @@ export const ROUTE_PATHS = {
   LOGIN: '/login',
   PROFILE: '/profile',
   ROOM_CREATE: '/rooms/create',
+  ROOM(roomId: string): string {
+    return `/rooms/${roomId}`;
+  },
 } as const;
 
 // UI 관련 상수

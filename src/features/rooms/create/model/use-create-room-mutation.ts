@@ -44,7 +44,9 @@ function useCreateRoomMutation() {
     onSuccess: (response) => {
       toast.success(CREATE_ROOM_SUCCESS_MESSAGE);
 
-      const nextPath = response.redirectPath ?? ROUTE_PATHS.HOME;
+      const roomId = response.roomId;
+
+      const nextPath = response.redirectPath ?? ROUTE_PATHS.ROOM(roomId);
       router.replace(nextPath);
     },
     onError: async (error) => {
