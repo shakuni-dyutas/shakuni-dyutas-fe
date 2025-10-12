@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import type { Room, RoomFilters } from '@/entities/room/types/room';
 import { useRooms } from '@/features/rooms/model/use-rooms';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -8,12 +6,14 @@ import { RoomCard } from '@/shared/ui/room-card';
 interface RoomListProps {
   filters: RoomFilters;
   onEnterRoom?: (roomId: string) => void;
+  rooms?: Room[]; // if provided, render these instead of fetching
 }
 
-function RoomList({ filters, onEnterRoom }: RoomListProps) {
-  const { data: rooms, isLoading, error } = useRooms(filters);
+function RoomList({ filters, onEnterRoom, rooms: providedRooms }: RoomListProps) {
+  const { data: fetchedRooms, isLoading, error } = useRooms(filters);
+  const rooms = providedRooms ?? fetchedRooms;
 
-  if (isLoading) {
+  if (!providedRooms && isLoading) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, idx) => (
@@ -25,7 +25,7 @@ function RoomList({ filters, onEnterRoom }: RoomListProps) {
     );
   }
 
-  if (error) {
+  if (!providedRooms && error) {
     return (
       <Card>
         <CardContent className="p-6 text-sm">목록을 불러오는 중 오류가 발생했어요.</CardContent>
