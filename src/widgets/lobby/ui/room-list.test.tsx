@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
@@ -23,18 +24,23 @@ const rooms: Room[] = [
 ];
 
 describe('RoomList', () => {
+  function renderWithClient(ui: React.ReactElement) {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  }
+
   test('rooms prop이 주어지면 해당 목록을 렌더링한다', () => {
-    render(<RoomList filters={{ view: 'active' }} rooms={rooms} />);
+    renderWithClient(<RoomList filters={{ view: 'active' }} rooms={rooms} />);
 
     expect(screen.getByRole('button', { name: 'enter-room' })).toBeInTheDocument();
     expect(screen.getByText('One')).toBeInTheDocument();
   });
 
   test('rooms prop이 비어있으면 빈 상태를 렌더링한다', () => {
-    render(<RoomList filters={{ view: 'active' }} rooms={[]} />);
+    renderWithClient(<RoomList filters={{ view: 'active' }} rooms={[]} />);
 
     expect(screen.getByText('표시할 방이 없어요.')).toBeInTheDocument();
   });
 });
-
-
