@@ -30,5 +30,3 @@ describe('LobbyTabs', () => {
     expect(onValueChange).toHaveBeenCalledWith('ended');
   });
 });
-
-

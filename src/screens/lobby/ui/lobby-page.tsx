@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useMemo, useState } from 'react';
 
 import type { RoomFilters } from '@/entities/room/types/room';

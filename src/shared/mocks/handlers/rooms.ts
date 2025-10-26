@@ -2,8 +2,8 @@ import { delay, HttpResponse, http } from 'msw';
 
 import type { Room } from '@/entities/room/types/room';
 
-const ROOM_CREATE_ENDPOINT = '*/rooms';
-const ROOM_CREATION_DELAY_MS = 1000;
+const ROOM_CREATE_ENDPOINT = '/api/rooms';
+const ROOM_CREATION_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 1000;
 
 const MOCK_ROOMS: Room[] = [
   {
@@ -139,12 +139,10 @@ export const roomsHandlers = [
       { status: 201 },
     );
   }),
-  
+
   http.get('/api/rooms', ({ request }) => {
     const url = new URL(request.url);
     const filtered = applyFilters(MOCK_ROOMS, url.searchParams);
     return HttpResponse.json({ rooms: filtered });
   }),
 ];
-
-

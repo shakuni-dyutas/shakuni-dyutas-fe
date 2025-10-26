@@ -67,16 +67,22 @@ function RoomCard({ room, onEnterRoom, className }: RoomCardProps) {
           <Badge variant={room.status === 'active' ? 'success' : 'outline'} aria-label="status">
             {room.status === 'active' ? 'Active' : 'Ended'}
           </Badge>
-          
+
           {/* TODO: 추후 위치 / 구조 변경 예정 */}
           {isHot ? (
-            <Badge variant="warning" aria-label="hot">Hot</Badge>
+            <Badge variant="warning" aria-label="hot">
+              Hot
+            </Badge>
           ) : null}
           {isNew ? (
-            <Badge variant="info" aria-label="new">New</Badge>
+            <Badge variant="info" aria-label="new">
+              New
+            </Badge>
           ) : null}
           {room.time_left && room.time_left !== '—' ? (
-            <Badge variant="info" aria-label="time-left">남은 시간 {room.time_left}</Badge>
+            <Badge variant="info" aria-label="time-left">
+              남은 시간 {room.time_left}
+            </Badge>
           ) : null}
         </section>
 
@@ -92,5 +98,3 @@ function RoomCard({ room, onEnterRoom, className }: RoomCardProps) {
 
 export type { RoomCardProps };
 export { RoomCard };
-
-

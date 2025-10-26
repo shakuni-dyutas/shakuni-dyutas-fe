@@ -52,5 +52,3 @@ function RoomList({ filters, onEnterRoom, rooms: providedRooms }: RoomListProps)
 
 export type { RoomListProps };
 export { RoomList };
-
-
