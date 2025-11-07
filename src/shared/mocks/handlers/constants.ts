@@ -2,9 +2,12 @@ export const MOCK_ACCESS_TOKEN = 'mock-access-token';
 export const MOCK_REFRESHED_ACCESS_TOKEN = 'mock-access-token-refreshed';
 export const MOCK_USER = {
   id: 'mock-user-id',
+  user_id: 'mock-user-id',
   email: 'player@dyutas.app',
   name: 'Dyutas Player',
+  nickname: 'Dyutas Player',
   avatarUrl: null,
+  profileImageUrl: null,
 };
 export const MOCK_USER_ID = MOCK_USER.id;
 

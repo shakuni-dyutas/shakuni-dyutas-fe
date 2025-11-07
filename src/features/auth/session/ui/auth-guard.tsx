@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
 
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { ROUTE_PATHS } from '@/shared/config/constants';
@@ -27,22 +27,21 @@ function AuthGuard({ children }: PropsWithChildren) {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
-  const hasRedirectedRef = useRef(false);
+  const isBootstrapping = useSessionStore((state) => state.isBootstrapping);
 
   useEffect(() => {
-    if (isAuthenticated || hasRedirectedRef.current) {
+    if (isAuthenticated || isBootstrapping) {
       return;
     }
 
     const targetPath = resolveRedirectPath(pathname);
     const redirectUrl = buildRedirectUrl(targetPath);
 
-    hasRedirectedRef.current = true;
     router.replace(redirectUrl);
-  }, [isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isBootstrapping, pathname, router]);
 
   if (!isAuthenticated) {
-    return null;
+    return isBootstrapping ? <div>Loading...</div> : null;
   }
 
   return <>{children}</>;

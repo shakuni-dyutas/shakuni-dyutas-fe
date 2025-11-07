@@ -8,6 +8,7 @@ import {
   GOOGLE_CLIENT_ID,
   IS_GOOGLE_CLIENT_CONFIGURED,
 } from '@/features/auth/google/config/google-oauth-config';
+import { ensureSessionWithRefreshToken } from '@/features/auth/session/model/session-service';
 import { runtimeEnv } from '@/shared/config/env';
 import { logDebug } from '@/shared/lib/logger';
 import { OverlayRootProvider } from '@/shared/providers/overlay-provider';
@@ -16,6 +17,10 @@ import { ThemeProvider } from '@/shared/providers/theme-provider';
 import { Toaster } from '@/shared/ui/sonner';
 
 export function AppProvider({ children }: PropsWithChildren) {
+  useEffect(() => {
+    ensureSessionWithRefreshToken();
+  }, []);
+
   useEffect(() => {
     if (!runtimeEnv.isApiMockingEnabled) {
       return;
