@@ -32,8 +32,17 @@ function createWrapper(client: QueryClient) {
   };
 }
 
-function createHttpError(status: number, body: unknown) {
-  const response = new Response(JSON.stringify(body), {
+function createHttpError(status: number, body?: unknown) {
+  const payload = body ?? {
+    errors: [
+      {
+        code: 'INTERNAL_ERROR',
+        message: '서버에서 오류가 발생했어요. 잠시 후 다시 시도해주세요.',
+      },
+    ],
+  };
+
+  const response = new Response(JSON.stringify(payload), {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -145,8 +154,13 @@ describe('useCompleteGoogleLogin', () => {
   test('HTTPError가 발생하면 서버 메시지를 노출한다', async () => {
     const client = createTestQueryClient();
     const wrapper = createWrapper(client);
-    const error = createHttpError(500, {
-      message: '서버에서 오류가 발생했어요. 잠시 후 다시 시도해주세요.',
+    const error = createHttpError(400, {
+      errors: [
+        {
+          code: 'INVALID_BODY',
+          message: '서버에서 오류가 발생했어요. 잠시 후 다시 시도해주세요.',
+        },
+      ],
     });
     completeGoogleLoginMock.mockRejectedValueOnce(error);
 
@@ -168,7 +182,7 @@ describe('useCompleteGoogleLogin', () => {
   test('HTTPError 메시지가 없으면 기본 메시지를 노출한다', async () => {
     const client = createTestQueryClient();
     const wrapper = createWrapper(client);
-    const error = createHttpError(500, { error: 'internal-error' });
+    const error = createHttpError(401, {});
     completeGoogleLoginMock.mockRejectedValueOnce(error);
 
     const { result } = renderHook(() => useCompleteGoogleLogin(), { wrapper });

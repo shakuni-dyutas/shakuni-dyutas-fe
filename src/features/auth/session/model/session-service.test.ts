@@ -22,7 +22,7 @@ describe('session-service', () => {
   });
 
   test('completeGoogleLogin 성공 시 세션 정보를 저장한다', async () => {
-    const snapshot = await completeGoogleLogin({ code: GOOGLE_AUTH_CODES.VALID });
+    const snapshot = await completeGoogleLogin({ code: GOOGLE_AUTH_CODES.EXISTING_USER });
 
     const state = useSessionStore.getState();
 

@@ -127,8 +127,18 @@ describe('LoginPanel', () => {
     const user = userEvent.setup();
 
     server.use(
-      http.post('*/auth/google', () =>
-        HttpResponse.json({ message: '유효하지 않은 코드예요.' }, { status: 400 }),
+      http.post('*/auth/signin/google', () =>
+        HttpResponse.json(
+          {
+            errors: [
+              {
+                code: 'INVALID_CODE',
+                message: '유효하지 않은 코드예요.',
+              },
+            ],
+          },
+          { status: 401 },
+        ),
       ),
     );
 
@@ -187,6 +197,22 @@ describe('LoginPanel', () => {
 
   test('서버 오류 응답 시 기본 오류 메시지를 표시한다', async () => {
     const user = userEvent.setup();
+
+    server.use(
+      http.post('*/auth/signin/google', () =>
+        HttpResponse.json(
+          {
+            errors: [
+              {
+                code: 'INTERNAL_ERROR',
+                message: '서버에서 오류가 발생했어요. 잠시 후 다시 시도해주세요.',
+              },
+            ],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
 
     loginSpy.mockImplementation(() => {
       latestLoginOptions?.onSuccess?.({ code: 'server-error', scope: 'profile email' });
