@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { type PropsWithChildren, useEffect } from 'react';
 
@@ -41,7 +42,16 @@ function AuthGuard({ children }: PropsWithChildren) {
   }, [isAuthenticated, isBootstrapping, pathname, router]);
 
   if (!isAuthenticated) {
-    return isBootstrapping ? <div>Loading...</div> : null;
+    if (isBootstrapping) {
+      return (
+        <div className="flex h-dvh items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <span className="sr-only">세션을 확인하고 있어요.</span>
+        </div>
+      );
+    }
+
+    return null;
   }
 
   return <>{children}</>;
