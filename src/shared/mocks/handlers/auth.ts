@@ -52,11 +52,11 @@ async function handleGoogleSignIn({ request }: { request: Request }) {
   const code = body.code?.trim();
 
   if (!code || code === GOOGLE_AUTH_CODES.MISSING) {
-    return createErrorResponse(400, 'INVALID_BODY', 'Authorization code가 필요해요.');
+    return createErrorResponse(400, 'INVALID_CODE', 'Authorization code is invalid');
   }
 
   if (code === GOOGLE_AUTH_CODES.INVALID) {
-    return createErrorResponse(401, 'INVALID_CODE', '유효하지 않은 코드예요.');
+    return createErrorResponse(401, 'INVALID_CODE', 'Authorization code is invalid');
   }
 
   const isNewUser = code === GOOGLE_AUTH_CODES.NEW_USER;
@@ -78,7 +78,7 @@ async function handleGoogleSignIn({ request }: { request: Request }) {
 
 async function handleSessionRefresh() {
   if (!currentRefreshToken) {
-    return createErrorResponse(401, 'REFRESH_EXPIRED', '세션이 만료되었어요. 다시 로그인해주세요.');
+    return createErrorResponse(401, 'INVALID_CODE', 'Authorization code is invalid');
   }
 
   currentRefreshToken = MOCK_REFRESH_TOKEN_ROTATED;
@@ -97,21 +97,15 @@ async function handleSessionRefresh() {
 }
 
 async function handleSessionSignOut() {
-  if (!currentRefreshToken) {
-    return createErrorResponse(401, 'ALREADY_SIGNED_OUT', '이미 로그아웃되었어요.');
-  }
-
+  // 실제 구현은 멱등적으로 204를 반환하고 쿠키를 제거한다.
   currentRefreshToken = null;
 
-  return HttpResponse.json(
-    { success: true },
-    {
-      status: 200,
-      headers: {
-        'Set-Cookie': serializeRefreshCookie('', { maxAge: 0 }),
-      },
+  return new HttpResponse(null, {
+    status: 204,
+    headers: {
+      'Set-Cookie': serializeRefreshCookie('', { maxAge: 0 }),
     },
-  );
+  });
 }
 
 const authHandlers = [

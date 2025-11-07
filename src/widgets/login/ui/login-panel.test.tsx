@@ -133,7 +133,7 @@ describe('LoginPanel', () => {
             errors: [
               {
                 code: 'INVALID_CODE',
-                message: '유효하지 않은 코드예요.',
+                message: 'Authorization code is invalid',
               },
             ],
           },
@@ -160,7 +160,7 @@ describe('LoginPanel', () => {
     await user.click(button);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('유효하지 않은 코드예요.');
+      expect(screen.getByRole('alert')).toHaveTextContent('Authorization code is invalid');
     });
 
     expect(replaceMock).not.toHaveBeenCalled();
