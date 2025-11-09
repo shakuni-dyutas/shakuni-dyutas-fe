@@ -90,7 +90,7 @@ function LobbyPage() {
       .filter((room) => room.status === 'active')
       .sort((a, b) => b.created_at.localeCompare(a.created_at))
       .slice(0, 10);
-  }, [tab, mockRooms]);
+  }, [tab, mockRooms.filter]);
 
   return (
     <>

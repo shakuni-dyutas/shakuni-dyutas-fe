@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { describe, expect, test } from 'vitest';
 
 import type { Room } from '@/entities/room/types/room';
@@ -24,7 +25,7 @@ const rooms: Room[] = [
 ];
 
 describe('RoomList', () => {
-  function renderWithClient(ui: React.ReactElement) {
+  function renderWithClient(ui: ReactElement) {
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });

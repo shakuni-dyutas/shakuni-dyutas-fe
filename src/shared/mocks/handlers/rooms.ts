@@ -70,7 +70,12 @@ const MOCK_ROOMS: Room[] = [
 
 function applyFilters(rooms: Room[], params: URLSearchParams): Room[] {
   // status 쿼리는 view로 동작: active | hot | new | ended
-  const view = params.get('status') as 'active' | 'hot' | 'new' | 'ended' | null;
+  const view = (params.get('view') ?? params.get('status')) as
+    | 'active'
+    | 'hot'
+    | 'new'
+    | 'ended'
+    | null;
   const search = params.get('search') ?? '';
   const sort = params.get('sort') as 'latest' | 'betting' | 'participants' | null;
 

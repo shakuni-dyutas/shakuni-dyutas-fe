@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
 type LobbyTabValue = 'active' | 'hot' | 'new' | 'ended';
 
@@ -13,7 +13,11 @@ function LobbyTabs({ value, onValueChange, className, children }: LobbyTabsProps
   return (
     <Tabs
       value={value}
-      onValueChange={(v) => onValueChange(v as LobbyTabValue)}
+      onValueChange={(v) => {
+        if (v === 'active' || v === 'hot' || v === 'new' || v === 'ended') {
+          onValueChange(v);
+        }
+      }}
       className={className}
     >
       <TabsList className="grid w-full grid-cols-4">

@@ -7,7 +7,8 @@ interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 function Progress({ className, value = 0, ...props }: ProgressProps) {
-  const clamped = Math.max(0, Math.min(100, value));
+  const safe = Number.isFinite(value as number) ? (value as number) : 0;
+  const clamped = Math.max(0, Math.min(100, safe));
 
   return (
     <div

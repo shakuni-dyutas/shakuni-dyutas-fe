@@ -1,14 +1,19 @@
+import type { Room } from '@/entities/room/types/room';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-
-import type { Room } from '@/entities/room/types/room';
 
 interface RoomCardProps {
   room: Room;
   onEnterRoom?: (roomId: string) => void;
   className?: string;
 }
+
+const ROOM_BADGE_THRESHOLDS = {
+  NEW_ROOM_HOURS: 24,
+  HOT_BETTING_AMOUNT: 15000,
+  HOT_PARTICIPANTS: 30,
+} as const;
 
 function RoomCard({ room, onEnterRoom, className }: RoomCardProps) {
   const handleEnter = () => {
@@ -23,35 +28,39 @@ function RoomCard({ room, onEnterRoom, className }: RoomCardProps) {
 
   // TODO: 추후 위치 / 구조 변경 예정
   const createdAtMs = Date.parse(room.created_at);
-  const isNew = Number.isFinite(createdAtMs) && Date.now() - createdAtMs <= 1000 * 60 * 60 * 24;
-  const isHot = room.total_betting >= 15000 || room.participants >= 30;
+  const isNew =
+    Number.isFinite(createdAtMs) &&
+    Date.now() - createdAtMs <= ROOM_BADGE_THRESHOLDS.NEW_ROOM_HOURS * 60 * 60 * 1000;
+  const isHot =
+    room.total_betting >= ROOM_BADGE_THRESHOLDS.HOT_BETTING_AMOUNT ||
+    room.participants >= ROOM_BADGE_THRESHOLDS.HOT_PARTICIPANTS;
 
   return (
     <Card className={className} data-slot="room-card" aria-label={`room-${room.id}`}>
       <CardContent className="flex flex-col gap-3 p-4">
         <header className="space-y-1">
           <h3 className="font-semibold text-base leading-tight">{room.title}</h3>
-          <p className="text-muted-foreground text-sm line-clamp-2">{room.description}</p>
+          <p className="line-clamp-2 text-muted-foreground text-sm">{room.description}</p>
         </header>
 
         <section className="space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-foreground/80">{room.team_a}</span>
+              <span className="font-medium text-foreground/80 text-xs">{room.team_a}</span>
               <span className="text-xs tabular-nums">{aRatio}%</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs tabular-nums">{bRatio}%</span>
-              <span className="text-xs font-medium text-foreground/80">{room.team_b}</span>
+              <span className="font-medium text-foreground/80 text-xs">{room.team_b}</span>
             </div>
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="absolute left-0 top-0 h-full rounded-l-full bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
+              className="absolute top-0 left-0 h-full rounded-l-full bg-gradient-to-r from-red-600 to-red-500 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] dark:from-red-500 dark:to-red-400"
               style={{ width: `${aRatio}%` }}
             />
             <div
-              className="absolute right-0 top-0 h-full rounded-r-full bg-gradient-to-l from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-400 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
+              className="absolute top-0 right-0 h-full rounded-r-full bg-gradient-to-l from-blue-600 to-blue-500 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] dark:from-blue-500 dark:to-blue-400"
               style={{ width: `${bRatio}%` }}
             />
           </div>

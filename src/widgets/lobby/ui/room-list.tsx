@@ -14,10 +14,11 @@ function RoomList({ filters, onEnterRoom, rooms: providedRooms }: RoomListProps)
   const rooms = providedRooms ?? fetchedRooms;
 
   if (!providedRooms && isLoading) {
+    // key 값 수정하기
     return (
       <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, idx) => (
-          <Card key={idx} className="animate-pulse">
+        {Array.from({ length: 3 }).map((id, idx) => (
+          <Card key={`room-list-card-${idx}-${id}`} className="animate-pulse">
             <CardContent className="h-28" />
           </Card>
         ))}
@@ -36,7 +37,7 @@ function RoomList({ filters, onEnterRoom, rooms: providedRooms }: RoomListProps)
   if (!rooms || rooms.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">표시할 방이 없어요.</CardContent>
+        <CardContent className="p-6 text-muted-foreground text-sm">표시할 방이 없어요.</CardContent>
       </Card>
     );
   }
