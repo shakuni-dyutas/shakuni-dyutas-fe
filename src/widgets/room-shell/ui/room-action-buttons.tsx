@@ -4,7 +4,7 @@ import { Button } from '@/shared/ui/button';
 
 function RoomActionButtons() {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
+    <div className="flex flex-row gap-3">
       <Button className="h-14 flex-1 rounded-full font-semibold text-base" size="lg">
         <Coins className="size-5" aria-hidden />
         <span>배팅</span>

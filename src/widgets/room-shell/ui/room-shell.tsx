@@ -4,10 +4,9 @@ import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { Button } from '@/shared/ui/button';
 import { ChatCard } from '@/widgets/room-shell/ui/chat-card';
-import { ChatInputBar } from '@/widgets/room-shell/ui/chat-input-bar';
 import { EvidenceSection } from '@/widgets/room-shell/ui/evidence-section';
 import { ParticipantsPanel } from '@/widgets/room-shell/ui/participants-panel';
-import { RoomActionButtons } from '@/widgets/room-shell/ui/room-action-buttons';
+import { RoomFooterBar } from '@/widgets/room-shell/ui/room-footer-bar';
 import { RoomSummaryBar } from '@/widgets/room-shell/ui/room-summary-bar';
 import { RoomShellSkeleton } from './room-shell-skeleton';
 
@@ -43,18 +42,17 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
       <RoomSummaryBar room={room} />
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-5">
             <EvidenceSection room={room} currentUserId={currentUserId} />
             <ChatCard room={room} currentUserId={currentUserId} />
-            <RoomActionButtons />
           </div>
 
           <ParticipantsPanel room={room} />
         </div>
       </div>
 
-      <ChatInputBar />
+      <RoomFooterBar />
     </div>
   );
 }
