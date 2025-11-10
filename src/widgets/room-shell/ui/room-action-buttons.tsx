@@ -5,9 +5,16 @@ import { Button } from '@/shared/ui/button';
 interface RoomActionButtonsProps {
   onBetClick?: () => void;
   onEvidenceClick?: () => void;
+  isEvidenceDisabled?: boolean;
+  hasSubmittedEvidence?: boolean;
 }
 
-function RoomActionButtons({ onBetClick, onEvidenceClick }: RoomActionButtonsProps) {
+function RoomActionButtons({
+  onBetClick,
+  onEvidenceClick,
+  isEvidenceDisabled,
+  hasSubmittedEvidence,
+}: RoomActionButtonsProps) {
   return (
     <div className="flex flex-row gap-3">
       <Button
@@ -23,9 +30,10 @@ function RoomActionButtons({ onBetClick, onEvidenceClick }: RoomActionButtonsPro
         size="lg"
         variant="outline"
         onClick={onEvidenceClick}
+        disabled={isEvidenceDisabled}
       >
         <FilePlus2 className="size-5" aria-hidden />
-        <span>증거 제출</span>
+        <span>{hasSubmittedEvidence ? '제출 완료' : '증거 제출'}</span>
       </Button>
     </div>
   );
