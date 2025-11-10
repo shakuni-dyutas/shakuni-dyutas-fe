@@ -1,14 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-
-import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { RoomDetail } from '@/entities/room/types/room-detail';
-import { useSessionStore } from '@/entities/session/model/session-store';
 import { openBetModal } from '@/features/bet-place/ui/bet-modal';
-import type { EvidenceSubmitPayload } from '@/features/evidence-submit/ui/evidence-modal';
 import { openEvidenceModal } from '@/features/evidence-submit/ui/evidence-modal';
 import { Button } from '@/shared/ui/button';
+import { useRoomShellState } from '@/widgets/room-shell/model/use-room-shell-state';
 import { ChatCard } from '@/widgets/room-shell/ui/chat-card';
 import { EvidenceSection } from '@/widgets/room-shell/ui/evidence-section';
 import { ParticipantsPanel } from '@/widgets/room-shell/ui/participants-panel';
@@ -23,57 +19,21 @@ interface RoomShellProps {
 }
 
 function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
-  const currentUserId = useSessionStore((state) => state.user?.id ?? null);
-  const [localEvidenceGroups, setLocalEvidenceGroups] = useState(room?.evidenceGroups ?? []);
+  const {
+    roomData,
+    currentUserId,
+    currentFaction,
+    hasSubmittedEvidence,
+    isEvidenceDisabled,
+    handleEvidenceSubmit,
+    handleChatSubmit,
+  } = useRoomShellState({ room });
 
-  useEffect(() => {
-    if (!room) {
-      setLocalEvidenceGroups([]);
-      return;
-    }
-
-    setLocalEvidenceGroups(room.evidenceGroups);
-  }, [room]);
-
-  const roomWithEvidence = useMemo(() => {
-    if (!room) {
-      return null;
-    }
-
-    return { ...room, evidenceGroups: localEvidenceGroups } satisfies RoomDetail;
-  }, [room, localEvidenceGroups]);
-
-  const currentParticipant = useMemo(() => {
-    if (!room || !currentUserId) {
-      return null;
-    }
-
-    return room.participants.find((participant) => participant.id === currentUserId) ?? null;
-  }, [currentUserId, room]);
-
-  const currentFaction = useMemo(() => {
-    if (!room || !currentParticipant) {
-      return null;
-    }
-
-    return room.factions.find((faction) => faction.id === currentParticipant.factionId) ?? null;
-  }, [currentParticipant, room]);
-
-  const hasSubmittedEvidence = useMemo(() => {
-    if (!currentUserId) {
-      return false;
-    }
-
-    return localEvidenceGroups.some((group) =>
-      group.submissions.some((submission) => submission.author.id === currentUserId),
-    );
-  }, [currentUserId, localEvidenceGroups]);
-
-  if (isLoading && !room) {
+  if (isLoading && !roomData) {
     return <RoomShellSkeleton />;
   }
 
-  if (!room) {
+  if (!roomData) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted/10 px-4 text-center">
         <div className="space-y-2">
@@ -89,72 +49,21 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
 
   const handleOpenBetModal = () => {
     openBetModal({
-      roomTitle: room.title,
-      factions: room.factions,
-      betting: room.betting,
+      roomTitle: roomData.title,
+      factions: roomData.factions,
+      betting: roomData.betting,
     }).catch(() => {});
-  };
-
-  const handleEvidenceSubmit = async (payload: EvidenceSubmitPayload) => {
-    if (!room || !currentParticipant) {
-      return;
-    }
-
-    const submissionId = generateTempId();
-    const newSubmission: EvidenceItem = {
-      id: submissionId,
-      roomId: room.id,
-      factionId: payload.factionId,
-      author: currentParticipant,
-      summary: payload.summary,
-      body: payload.body,
-      submittedAt: new Date().toISOString(),
-      status: 'submitted',
-      media: payload.images.map((file, index) => ({
-        id: `${submissionId}-media-${index}`,
-        type: 'image',
-        url: `local:${file.name}`,
-        sizeInBytes: file.size,
-      })),
-    };
-
-    setLocalEvidenceGroups((prev) => {
-      const factionName =
-        room.factions.find((faction) => faction.id === payload.factionId)?.name ?? '내 진영';
-
-      const nextGroups = prev.some((group) => group.factionId === payload.factionId)
-        ? prev.map((group) =>
-            group.factionId === payload.factionId
-              ? { ...group, submissions: [newSubmission, ...group.submissions] }
-              : group,
-          )
-        : [
-            ...prev,
-            {
-              factionId: payload.factionId,
-              factionName,
-              submissions: [newSubmission],
-            },
-          ];
-
-      return nextGroups;
-    });
   };
 
   const handleOpenEvidenceModal = () => {
     openEvidenceModal({
-      roomTitle: room.title,
+      roomTitle: roomData.title,
       faction: currentFaction,
-      restrictions: room.restrictions.evidence,
+      restrictions: roomData.restrictions.evidence,
       hasSubmitted: hasSubmittedEvidence,
-      onSubmit: async (values) => {
-        await handleEvidenceSubmit(values);
-      },
+      onSubmit: handleEvidenceSubmit,
     }).catch(() => {});
   };
-
-  const roomData = roomWithEvidence ?? room;
-  const isEvidenceDisabled = !currentFaction || hasSubmittedEvidence;
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background pb-40">
@@ -172,21 +81,15 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
       </div>
 
       <RoomFooterBar
+        onSubmit={handleChatSubmit}
         onBetClick={handleOpenBetModal}
         onEvidenceClick={handleOpenEvidenceModal}
         isEvidenceDisabled={isEvidenceDisabled}
         hasSubmittedEvidence={hasSubmittedEvidence}
+        maxLength={roomData.restrictions.chat.maxLength}
       />
     </div>
   );
-}
-
-function generateTempId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-
-  return Math.random().toString(36).slice(2);
 }
 
 export { RoomShell };

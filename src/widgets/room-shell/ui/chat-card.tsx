@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import type { RoomDetail } from '@/entities/room/types/room-detail';
+import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
 import { cn } from '@/shared/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Badge } from '@/shared/ui/badge';
@@ -34,48 +35,50 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
               </CollapsibleTrigger>
             </div>
           </div>
-          <CollapsibleContent className="space-y-4 overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
-            {room.chatMessages.slice(0, 5).map((message) => {
-              const isMine = Boolean(currentUserId && message.author.id === currentUserId);
+          <CollapsibleContent className="overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
+            <div className="max-h-[28rem] space-y-4 overflow-y-auto pr-1">
+              {room.chatMessages.map((message) => {
+                const isMine = Boolean(currentUserId && message.author.id === currentUserId);
 
-              return (
-                <article
-                  key={message.id}
-                  className={cn('flex w-full', isMine ? 'justify-end' : 'justify-start')}
-                >
-                  <div
-                    className={cn(
-                      'flex max-w-2xl items-start gap-3 rounded-3xl px-4 py-3',
-                      isMine
-                        ? 'flex-row-reverse bg-primary text-primary-foreground'
-                        : 'bg-muted/30 text-foreground',
-                    )}
+                return (
+                  <article
+                    key={message.id}
+                    className={cn('flex w-full', isMine ? 'justify-end' : 'justify-start')}
                   >
-                    <Avatar className="size-9 border border-border/70">
-                      <AvatarImage
-                        src={message.author.avatarUrl ?? undefined}
-                        alt={message.author.nickname}
-                      />
-                      <AvatarFallback>{message.author.nickname.slice(0, 1)}</AvatarFallback>
-                    </Avatar>
-                    <div className={cn('space-y-1 text-left', isMine && 'text-right')}>
-                      <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-                        <span className="font-semibold text-foreground">
-                          {isMine ? '나' : message.author.nickname}
-                        </span>
-                        <Badge
-                          style={{ backgroundColor: findFactionColor(room, message.factionId) }}
-                        >
-                          {resolveFactionName(room, message.factionId)}
-                        </Badge>
-                        <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+                    <div
+                      className={cn(
+                        'flex max-w-2xl items-start gap-3 rounded-3xl px-4 py-3',
+                        isMine
+                          ? 'flex-row-reverse bg-primary text-primary-foreground'
+                          : 'bg-muted/30 text-foreground',
+                      )}
+                    >
+                      <Avatar className="size-9 border border-border/70">
+                        <AvatarImage
+                          src={message.author.avatarUrl ?? undefined}
+                          alt={message.author.nickname}
+                        />
+                        <AvatarFallback>{message.author.nickname.slice(0, 1)}</AvatarFallback>
+                      </Avatar>
+                      <div className={cn('space-y-1 text-left', isMine && 'text-right')}>
+                        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+                          <span className="font-semibold text-foreground">
+                            {isMine ? '나' : message.author.nickname}
+                          </span>
+                          <Badge
+                            style={{ backgroundColor: findFactionColor(room, message.factionId) }}
+                          >
+                            {resolveFactionName(room, message.factionId)}
+                          </Badge>
+                          <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+                        </div>
+                        <p className="text-sm">{message.body}</p>
                       </div>
-                      <p className="text-sm">{message.body}</p>
                     </div>
-                  </div>
-                </article>
-              );
-            })}
+                  </article>
+                );
+              })}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
@@ -83,11 +86,17 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
   );
 }
 
+const DEFAULT_FACTION_COLOR = '#475569';
+
 function findFactionColor(room: RoomDetail, factionId: string) {
-  return room.factions.find((faction) => faction.id === factionId)?.color ?? '#0ea5e9';
+  return room.factions.find((faction) => faction.id === factionId)?.color ?? DEFAULT_FACTION_COLOR;
 }
 
 function resolveFactionName(room: RoomDetail, factionId: string) {
+  if (factionId === TEAM_FACTION_NONE_ID) {
+    return '진영 없음';
+  }
+
   return room.factions.find((faction) => faction.id === factionId)?.name ?? '진영';
 }
 
