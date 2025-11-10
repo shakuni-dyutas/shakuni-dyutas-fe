@@ -1,7 +1,8 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
 
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { ROUTE_PATHS } from '@/shared/config/constants';
@@ -27,21 +28,29 @@ function AuthGuard({ children }: PropsWithChildren) {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
-  const hasRedirectedRef = useRef(false);
+  const isBootstrapping = useSessionStore((state) => state.isBootstrapping);
 
   useEffect(() => {
-    if (isAuthenticated || hasRedirectedRef.current) {
+    if (isAuthenticated || isBootstrapping) {
       return;
     }
 
     const targetPath = resolveRedirectPath(pathname);
     const redirectUrl = buildRedirectUrl(targetPath);
 
-    hasRedirectedRef.current = true;
     router.replace(redirectUrl);
-  }, [isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isBootstrapping, pathname, router]);
 
   if (!isAuthenticated) {
+    if (isBootstrapping) {
+      return (
+        <div className="flex h-dvh items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <span className="sr-only">세션을 확인하고 있어요.</span>
+        </div>
+      );
+    }
+
     return null;
   }
 

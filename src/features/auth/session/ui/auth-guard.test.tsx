@@ -18,6 +18,7 @@ function resetSessionState() {
     accessToken: null,
     user: null,
     isAuthenticated: false,
+    isBootstrapping: false,
   });
 }
 
@@ -35,8 +36,8 @@ describe('AuthGuard', () => {
       user: {
         id: 'session-user',
         email: 'user@example.com',
-        name: '세션 유저',
-        avatarUrl: null,
+        nickname: '세션 유저',
+        profileImageUrl: null,
       },
     });
 

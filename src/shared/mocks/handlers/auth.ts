@@ -4,46 +4,114 @@ import {
   createAccessTokenResponse,
   GOOGLE_AUTH_CODES,
   MOCK_ACCESS_TOKEN,
+  MOCK_REFRESH_TOKEN,
+  MOCK_REFRESH_TOKEN_ROTATED,
   MOCK_REFRESHED_ACCESS_TOKEN,
   MOCK_USER,
 } from './constants';
 
-export const authHandlers = [
-  http.post('*/auth/google', async ({ request }) => {
-    const body = (await request.json()) as { code?: string; redirectUri?: string };
-    const { code, redirectUri } = body;
+type GoogleSignInRequestBody = {
+  code?: string;
+  redirectUri?: string;
+};
+const RTK_COOKIE_NAME = 'rtk';
+const RTK_COOKIE_ATTRIBUTES = ['Path=/auth', 'HttpOnly', 'Secure', 'SameSite=None'] as const;
 
-    if (!code) {
-      return HttpResponse.json({ message: 'Authorization code가 필요해요.' }, { status: 400 });
-    }
+function serializeRefreshCookie(value: string, options?: { maxAge?: number }) {
+  const attributes: string[] = [...RTK_COOKIE_ATTRIBUTES];
 
-    if (code === GOOGLE_AUTH_CODES.INVALID) {
-      return HttpResponse.json({ message: '유효하지 않은 코드예요.' }, { status: 400 });
-    }
+  if (typeof options?.maxAge === 'number') {
+    attributes.push(`Max-Age=${options.maxAge}`);
+  }
 
-    if (code === GOOGLE_AUTH_CODES.CANCELLED) {
-      return HttpResponse.json(
-        { message: '로그인이 취소되었어요. 다시 진행해주세요.' },
-        { status: 499 },
-      );
-    }
+  return `${RTK_COOKIE_NAME}=${value}; ${attributes.join('; ')}`;
+}
 
-    if (code === GOOGLE_AUTH_CODES.SERVER_ERROR) {
-      return HttpResponse.json(
-        { message: '서버에서 오류가 발생했어요. 잠시 후 다시 시도해주세요.' },
-        { status: 500 },
-      );
-    }
+function createErrorResponse(status: number, code: string, message: string) {
+  return HttpResponse.json(
+    {
+      errors: [
+        {
+          code,
+          message,
+        },
+      ],
+    },
+    { status },
+  );
+}
 
-    return HttpResponse.json({
+let currentRefreshToken: string | null = MOCK_REFRESH_TOKEN;
+
+function resetAuthMockState() {
+  currentRefreshToken = MOCK_REFRESH_TOKEN;
+}
+
+async function handleGoogleSignIn({ request }: { request: Request }) {
+  const body = (await request.json()) as GoogleSignInRequestBody;
+  const code = body.code?.trim();
+
+  if (!code || code === GOOGLE_AUTH_CODES.MISSING) {
+    return createErrorResponse(400, 'INVALID_CODE', 'Authorization code is invalid');
+  }
+
+  if (code === GOOGLE_AUTH_CODES.INVALID) {
+    return createErrorResponse(401, 'INVALID_CODE', 'Authorization code is invalid');
+  }
+
+  const isNewUser = code === GOOGLE_AUTH_CODES.NEW_USER;
+  currentRefreshToken = MOCK_REFRESH_TOKEN;
+
+  return HttpResponse.json(
+    {
       ...createAccessTokenResponse(MOCK_ACCESS_TOKEN),
-      redirectUri,
       user: MOCK_USER,
-    });
-  }),
-  http.post('*/auth/refresh', () =>
-    HttpResponse.json({
+    },
+    {
+      status: isNewUser ? 201 : 200,
+      headers: {
+        'Set-Cookie': serializeRefreshCookie(currentRefreshToken),
+      },
+    },
+  );
+}
+
+async function handleSessionRefresh() {
+  if (!currentRefreshToken) {
+    return createErrorResponse(401, 'INVALID_CODE', 'Authorization code is invalid');
+  }
+
+  currentRefreshToken = MOCK_REFRESH_TOKEN_ROTATED;
+
+  return HttpResponse.json(
+    {
       ...createAccessTokenResponse(MOCK_REFRESHED_ACCESS_TOKEN),
-    }),
-  ),
+    },
+    {
+      status: 201,
+      headers: {
+        'Set-Cookie': serializeRefreshCookie(currentRefreshToken),
+      },
+    },
+  );
+}
+
+async function handleSessionSignOut() {
+  // 실제 구현은 멱등적으로 204를 반환하고 쿠키를 제거한다.
+  currentRefreshToken = null;
+
+  return new HttpResponse(null, {
+    status: 204,
+    headers: {
+      'Set-Cookie': serializeRefreshCookie('', { maxAge: 0 }),
+    },
+  });
+}
+
+const authHandlers = [
+  http.post('*/auth/signin/google', handleGoogleSignIn),
+  http.post('*/auth/refresh', handleSessionRefresh),
+  http.post('*/auth/signout', handleSessionSignOut),
 ];
+
+export { authHandlers, resetAuthMockState };

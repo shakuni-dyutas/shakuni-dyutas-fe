@@ -8,6 +8,7 @@ import {
   GOOGLE_CLIENT_ID,
   IS_GOOGLE_CLIENT_CONFIGURED,
 } from '@/features/auth/google/config/google-oauth-config';
+import { ensureSessionWithRefreshToken } from '@/features/auth/session/model/session-service';
 import { runtimeEnv } from '@/shared/config/env';
 import { logDebug } from '@/shared/lib/logger';
 import { OverlayRootProvider } from '@/shared/providers/overlay-provider';
@@ -17,25 +18,41 @@ import { Toaster } from '@/shared/ui/sonner';
 
 export function AppProvider({ children }: PropsWithChildren) {
   useEffect(() => {
-    if (!runtimeEnv.isApiMockingEnabled) {
-      return;
-    }
-
     let isUnmounted = false;
 
-    const enableMocks = async () => {
-      try {
-        const { enableMocking } = await import('@/shared/mocks');
+    const bootstrap = async () => {
+      let mockingFailed = false;
 
-        if (!isUnmounted) {
-          await enableMocking();
+      if (runtimeEnv.isApiMockingEnabled) {
+        try {
+          const { enableMocking } = await import('@/shared/mocks');
+
+          if (!isUnmounted) {
+            await enableMocking();
+          }
+        } catch (error) {
+          mockingFailed = true;
+          console.error('[AppProvider] MSW 초기화에 실패했습니다. 실제 API를 사용합니다.', error);
         }
-      } catch (error) {
-        console.error('[AppProvider] MSW 초기화에 실패했습니다.', error);
+      }
+
+      if (!isUnmounted) {
+        try {
+          await ensureSessionWithRefreshToken();
+        } catch (error) {
+          console.error('[AppProvider] 세션 부트스트랩 중 오류가 발생했습니다.', error);
+        }
+      }
+
+      if (mockingFailed) {
+        logDebug(
+          'MSW',
+          'MSW 워커 초기화에 실패해서 실 API로 대체했어요. 인증서 구성을 확인해주세요.',
+        );
       }
     };
 
-    enableMocks();
+    bootstrap();
 
     return () => {
       isUnmounted = true;

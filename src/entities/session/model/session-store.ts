@@ -3,8 +3,8 @@ import { create } from 'zustand';
 type SessionUser = {
   id: string;
   email: string;
-  name: string;
-  avatarUrl?: string | null;
+  nickname: string;
+  profileImageUrl?: string | null;
 };
 
 type SessionSnapshot = {
@@ -16,8 +16,10 @@ type SessionState = {
   accessToken: string | null;
   user: SessionUser | null;
   isAuthenticated: boolean;
+  isBootstrapping: boolean;
   setSession: (snapshot: SessionSnapshot) => void;
   setAccessToken: (accessToken: string) => void;
+  setBootstrapping: (isBootstrapping: boolean) => void;
   clearSession: () => void;
 };
 
@@ -25,6 +27,7 @@ const useSessionStore = create<SessionState>((set) => ({
   accessToken: null,
   user: null,
   isAuthenticated: false,
+  isBootstrapping: true,
   setSession: ({ accessToken, user }) =>
     set({
       accessToken,
@@ -32,15 +35,17 @@ const useSessionStore = create<SessionState>((set) => ({
       isAuthenticated: true,
     }),
   setAccessToken: (accessToken) =>
-    set((state) => ({
+    set(() => ({
       accessToken,
-      isAuthenticated: Boolean(accessToken && state.user),
+      isAuthenticated: Boolean(accessToken),
     })),
+  setBootstrapping: (isBootstrapping) => set({ isBootstrapping }),
   clearSession: () =>
     set({
       accessToken: null,
       user: null,
       isAuthenticated: false,
+      isBootstrapping: false,
     }),
 }));
 
