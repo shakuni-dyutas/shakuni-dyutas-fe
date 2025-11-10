@@ -52,7 +52,7 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
         </div>
       </div>
 
-      <RoomFooterBar />
+      <RoomFooterBar room={room} />
     </div>
   );
 }

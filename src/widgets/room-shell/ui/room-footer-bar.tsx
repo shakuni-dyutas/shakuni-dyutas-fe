@@ -1,16 +1,27 @@
 import { SendHorizonal } from 'lucide-react';
 import { type FormEvent, useId } from 'react';
 
+import type { RoomDetail } from '@/entities/room/types/room-detail';
+import { openBetModal } from '@/features/bet-place/ui/bet-modal';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { RoomActionButtons } from '@/widgets/room-shell/ui/room-action-buttons';
 
 interface RoomFooterBarProps {
+  room: RoomDetail;
   onSubmit?: (value: string) => void;
 }
 
-function RoomFooterBar({ onSubmit }: RoomFooterBarProps) {
+function RoomFooterBar({ room, onSubmit }: RoomFooterBarProps) {
   const inputId = useId();
+
+  function handleOpenBetModal() {
+    openBetModal({
+      roomTitle: room.title,
+      factions: room.factions,
+      betting: room.betting,
+    }).catch(() => {});
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +39,7 @@ function RoomFooterBar({ onSubmit }: RoomFooterBarProps) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 border-border border-t bg-background/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
-        <RoomActionButtons />
+        <RoomActionButtons onBetClick={handleOpenBetModal} />
         <form className="flex w-full gap-3" onSubmit={handleSubmit}>
           <label className="sr-only" htmlFor={inputId}>
             채팅 입력
