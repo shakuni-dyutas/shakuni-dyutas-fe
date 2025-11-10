@@ -1,9 +1,19 @@
 import { delay, HttpResponse, http } from 'msw';
-
+import type { ChatMessage } from '@/entities/chat/types/chat-message';
+import type { EvidenceItem } from '@/entities/evidence/types/evidence';
+import type { Participant } from '@/entities/participant/types/participant';
+import {
+  getRoomFactionColor,
+  ROOM_CHAT_CONSTRAINTS,
+  ROOM_EVIDENCE_CONSTRAINTS,
+} from '@/entities/room/config/constants';
 import type { Room } from '@/entities/room/types/room';
+import type { RoomDetail, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
+import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/team-faction';
 
-const ROOM_CREATE_ENDPOINT = '/api/rooms';
+const ROOM_CREATE_ENDPOINT = '*/rooms';
 const ROOM_CREATION_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 1000;
+const ROOM_DETAIL_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 400;
 
 const MOCK_ROOMS: Room[] = [
   {
@@ -67,6 +77,271 @@ const MOCK_ROOMS: Room[] = [
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
   },
 ];
+
+const ROOM_DETAIL_FACTIONS: TeamFaction[] = [
+  {
+    id: 'faction-alpha',
+    name: '알파 진영',
+    description: 'AI 의사결정은 인간의 편견을 줄일 수 있다',
+    color: getRoomFactionColor(0),
+  },
+  {
+    id: 'faction-beta',
+    name: '베타 진영',
+    description: 'AI 의사결정은 감정적 맥락을 잃는다',
+    color: getRoomFactionColor(1),
+  },
+];
+
+const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
+  {
+    id: 'user-1',
+    nickname: '호스트아키',
+    avatarUrl: '/mock/avatar-host.png',
+    factionId: 'faction-alpha',
+    status: 'online',
+    role: 'host',
+    joinedAt: '2025-11-08T02:30:00.000Z',
+    totalBetPoints: 1_500,
+  },
+  {
+    id: 'user-2',
+    nickname: '데이터여왕',
+    avatarUrl: '/mock/avatar-02.png',
+    factionId: 'faction-alpha',
+    status: 'online',
+    role: 'member',
+    joinedAt: '2025-11-08T02:33:00.000Z',
+    totalBetPoints: 900,
+  },
+  {
+    id: 'user-3',
+    nickname: '감성파상어',
+    avatarUrl: '/mock/avatar-03.png',
+    factionId: 'faction-beta',
+    status: 'online',
+    role: 'member',
+    joinedAt: '2025-11-08T02:35:00.000Z',
+    totalBetPoints: 700,
+  },
+  {
+    id: 'user-4',
+    nickname: '밈장군',
+    avatarUrl: '/mock/avatar-04.png',
+    factionId: 'faction-beta',
+    status: 'offline',
+    role: 'member',
+    joinedAt: '2025-11-08T02:41:00.000Z',
+    totalBetPoints: 400,
+  },
+  {
+    id: 'user-5',
+    nickname: '팩트폭격기',
+    avatarUrl: '/mock/avatar-05.png',
+    factionId: 'faction-alpha',
+    status: 'online',
+    role: 'member',
+    joinedAt: '2025-11-08T02:47:00.000Z',
+    totalBetPoints: 500,
+  },
+];
+
+const ROOM_DETAIL_CHAT_MESSAGES: ChatMessage[] = [
+  {
+    id: 'chat-1',
+    roomId: 'room-mock-1',
+    factionId: 'faction-alpha',
+    author: {
+      id: 'user-1',
+      nickname: '호스트아키',
+      avatarUrl: '/mock/avatar-host.png',
+    },
+    body: '오늘 라운드는 감정 노동 자동화가 주제입니다. 자료 준비해 주세요!',
+    createdAt: '2025-11-08T02:32:00.000Z',
+  },
+  {
+    id: 'chat-2',
+    roomId: 'room-mock-1',
+    factionId: 'faction-beta',
+    author: {
+      id: 'user-3',
+      nickname: '감성파상어',
+      avatarUrl: '/mock/avatar-03.png',
+    },
+    body: 'AI는 공감이 없어서 CS 만족도가 떨어진 사례가 있습니다.',
+    createdAt: '2025-11-08T02:36:00.000Z',
+  },
+  {
+    id: 'chat-3',
+    roomId: 'room-mock-1',
+    factionId: 'faction-alpha',
+    author: {
+      id: 'user-2',
+      nickname: '데이터여왕',
+      avatarUrl: '/mock/avatar-02.png',
+    },
+    body: '반대로 AI 덕분에 상담 대기 시간이 40% 줄어들었습니다.',
+    createdAt: '2025-11-08T02:38:00.000Z',
+  },
+];
+
+const ROOM_DETAIL_EVIDENCE_ITEMS: EvidenceItem[] = [
+  {
+    id: 'evi-1',
+    roomId: 'room-mock-1',
+    factionId: 'faction-alpha',
+    author: {
+      id: 'user-2',
+      nickname: '데이터여왕',
+      avatarUrl: '/mock/avatar-02.png',
+    },
+    summary: '콜센터 자동화 성공 사례',
+    body: 'AI 보조 상담 도입 후 평균 처리 시간이 35% 단축.',
+    submittedAt: '2025-11-08T02:50:00.000Z',
+    status: 'submitted',
+    media: [
+      {
+        id: 'img-1',
+        type: 'image',
+        url: '/mock/evidence/alpha-graph.png',
+        thumbnailUrl: '/mock/evidence/alpha-graph-thumb.png',
+        sizeInBytes: 450_000,
+        description: '효율성 비교 그래프',
+      },
+    ],
+  },
+  {
+    id: 'evi-2',
+    roomId: 'room-mock-1',
+    factionId: 'faction-beta',
+    author: {
+      id: 'user-3',
+      nickname: '감성파상어',
+      avatarUrl: '/mock/avatar-03.png',
+    },
+    summary: 'AI 공감 실패 사례',
+    body: '감정 케어 실패로 고객 불만이 폭증한 보고서를 첨부합니다.',
+    submittedAt: '2025-11-08T02:54:00.000Z',
+    status: 'submitted',
+    media: [
+      {
+        id: 'img-2',
+        type: 'image',
+        url: '/mock/evidence/beta-sentiment.png',
+        thumbnailUrl: '/mock/evidence/beta-sentiment-thumb.png',
+        sizeInBytes: 530_000,
+        description: 'CS 만족도 하락 그래프',
+      },
+    ],
+  },
+];
+
+function buildTeamBettingSnapshots(
+  participants: Participant[],
+  factions: TeamFaction[],
+): TeamBettingSnapshot[] {
+  return factions.map((faction) => {
+    const relatedParticipants = participants.filter(
+      (participant) => participant.factionId === faction.id,
+    );
+    const totalBetPoints = relatedParticipants.reduce(
+      (sum, participant) => sum + participant.totalBetPoints,
+      0,
+    );
+
+    return {
+      factionId: faction.id,
+      participantCount: relatedParticipants.length,
+      totalBetPoints,
+      averageBetPoints:
+        relatedParticipants.length > 0
+          ? Math.round(totalBetPoints / relatedParticipants.length)
+          : 0,
+    };
+  });
+}
+
+function buildFactionSnapshots(
+  teamStats: TeamBettingSnapshot[],
+  evidenceItems: EvidenceItem[],
+): RoomFactionSnapshot[] {
+  return ROOM_DETAIL_FACTIONS.map((faction) => {
+    const stats = teamStats.find((item) => item.factionId === faction.id);
+    const evidenceCount = evidenceItems.filter((item) => item.factionId === faction.id).length;
+
+    return {
+      ...faction,
+      memberCount: stats?.participantCount ?? 0,
+      totalBetPoints: stats?.totalBetPoints ?? 0,
+      evidenceCount,
+    };
+  });
+}
+
+interface BuildRoomDetailMockOptions {
+  minBetPoints?: number;
+  timeLimitMinutes?: number;
+}
+
+const ROOM_DETAIL_DEFAULTS = {
+  minBetPoints: 100,
+  timeLimitMinutes: 60,
+} as const;
+
+function buildRoomDetailMock(roomId: string, options: BuildRoomDetailMockOptions = {}): RoomDetail {
+  const minBetPoints = options.minBetPoints ?? ROOM_DETAIL_DEFAULTS.minBetPoints;
+  const timeLimitMinutes = options.timeLimitMinutes ?? ROOM_DETAIL_DEFAULTS.timeLimitMinutes;
+  const teamStats = buildTeamBettingSnapshots(ROOM_DETAIL_PARTICIPANTS, ROOM_DETAIL_FACTIONS);
+  const totalPoolPoints = teamStats.reduce((sum, stat) => sum + stat.totalBetPoints, 0);
+  const factionsSnapshots = buildFactionSnapshots(teamStats, ROOM_DETAIL_EVIDENCE_ITEMS);
+  const evidenceGroups = ROOM_DETAIL_FACTIONS.map((faction) => ({
+    factionId: faction.id,
+    factionName: faction.name,
+    submissions: ROOM_DETAIL_EVIDENCE_ITEMS.filter((item) => item.factionId === faction.id),
+  }));
+  const host =
+    ROOM_DETAIL_PARTICIPANTS.find((participant) => participant.role === 'host') ??
+    ROOM_DETAIL_PARTICIPANTS[0];
+  const createdAt = '2025-11-08T02:30:00.000Z';
+  const endsAt = new Date(
+    new Date(createdAt).getTime() + timeLimitMinutes * 60 * 1000,
+  ).toISOString();
+
+  return {
+    id: roomId,
+    title: '방 안에서 벌어지는 노동의 미래',
+    topic: 'AI 감정 노동 규제 가능성',
+    description:
+      'AI 상담원이 대체할 수 없는 감정 노동의 한계와 보완책을 두 진영으로 나누어 토론합니다.',
+    createdAt,
+    timeLimitMinutes,
+    host,
+    countdown: {
+      endsAt,
+      remainingSeconds: Math.max(timeLimitMinutes * 60 - 5 * 60, 0),
+    },
+    restrictions: {
+      minBetPoints,
+      evidence: {
+        textMaxLength: ROOM_EVIDENCE_CONSTRAINTS.TEXT_MAX_LENGTH,
+        imageMaxSizeMb: ROOM_EVIDENCE_CONSTRAINTS.IMAGE_MAX_SIZE_MB,
+        imageMaxCount: ROOM_EVIDENCE_CONSTRAINTS.IMAGE_MAX_COUNT,
+      },
+      chat: {
+        maxLength: ROOM_CHAT_CONSTRAINTS.MAX_LENGTH,
+      },
+    },
+    factions: factionsSnapshots,
+    betting: {
+      totalPoolPoints,
+      minBetPoints,
+      factions: teamStats,
+    },
+    participants: ROOM_DETAIL_PARTICIPANTS,
+    evidenceGroups,
+    chatMessages: ROOM_DETAIL_CHAT_MESSAGES,
+  };
+}
 
 function applyFilters(rooms: Room[], params: URLSearchParams): Room[] {
   // status 쿼리는 view로 동작: active | hot | new | ended
@@ -145,9 +420,17 @@ export const roomsHandlers = [
     );
   }),
 
-  http.get('/api/rooms', ({ request }) => {
+  http.get('*/rooms', ({ request }) => {
     const url = new URL(request.url);
     const filtered = applyFilters(MOCK_ROOMS, url.searchParams);
     return HttpResponse.json({ rooms: filtered });
+  }),
+
+  http.get('*/rooms/:roomId', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json({ room: buildRoomDetailMock(roomId) });
   }),
 ];
