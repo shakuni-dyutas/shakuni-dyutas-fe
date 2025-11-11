@@ -108,10 +108,22 @@ async function handleSessionSignOut() {
   });
 }
 
+async function handleSessionMe() {
+  return HttpResponse.json({
+    user: {
+      id: MOCK_USER.id,
+      email: MOCK_USER.email,
+      nickname: MOCK_USER.nickname ?? MOCK_USER.name,
+      profileImageUrl: MOCK_USER.profileImageUrl ?? MOCK_USER.avatarUrl ?? null,
+    },
+  });
+}
+
 const authHandlers = [
   http.post('*/auth/signin/google', handleGoogleSignIn),
   http.post('*/auth/refresh', handleSessionRefresh),
   http.post('*/auth/signout', handleSessionSignOut),
+  http.get('*/auth/me', handleSessionMe),
 ];
 
 export { authHandlers, resetAuthMockState };

@@ -19,6 +19,7 @@ type SessionState = {
   isBootstrapping: boolean;
   setSession: (snapshot: SessionSnapshot) => void;
   setAccessToken: (accessToken: string) => void;
+  setUser: (user: SessionUser | null) => void;
   setBootstrapping: (isBootstrapping: boolean) => void;
   clearSession: () => void;
 };
@@ -39,6 +40,7 @@ const useSessionStore = create<SessionState>((set) => ({
       accessToken,
       isAuthenticated: Boolean(accessToken),
     })),
+  setUser: (user) => set({ user }),
   setBootstrapping: (isBootstrapping) => set({ isBootstrapping }),
   clearSession: () =>
     set({

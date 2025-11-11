@@ -61,6 +61,7 @@ describe('session-service', () => {
     expect(result.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.isAuthenticated).toBe(true);
+    expect(state.user?.id).toBe(MOCK_USER_ID);
   });
 
   test('signOut 호출 시 세션을 초기화한다', async () => {
@@ -88,5 +89,6 @@ describe('session-service', () => {
     const state = useSessionStore.getState();
     expect(state.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.isAuthenticated).toBe(true);
+    expect(state.user?.id).toBe(MOCK_USER_ID);
   });
 });
