@@ -8,7 +8,15 @@ import {
   ROOM_EVIDENCE_CONSTRAINTS,
 } from '@/entities/room/config/constants';
 import type { Room } from '@/entities/room/types/room';
-import type { RoomDetail, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
+import type {
+  RoomBettingState,
+  RoomChatState,
+  RoomDetail,
+  RoomEvidenceState,
+  RoomFactionSnapshot,
+  RoomMeta,
+  RoomParticipants,
+} from '@/entities/room/types/room-detail';
 import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/team-faction';
 
 const ROOM_CREATE_ENDPOINT = '*/rooms';
@@ -358,6 +366,59 @@ function cloneRoomDetail(detail: RoomDetail): RoomDetail {
   return JSON.parse(JSON.stringify(detail)) as RoomDetail;
 }
 
+function buildRoomMeta(detail: RoomDetail): RoomMeta {
+  const cloned = cloneRoomDetail(detail);
+  const {
+    id,
+    title,
+    topic,
+    description,
+    createdAt,
+    timeLimitMinutes,
+    host,
+    countdown,
+    restrictions,
+    factions,
+  } = cloned;
+
+  return {
+    id,
+    title,
+    topic,
+    description,
+    createdAt,
+    timeLimitMinutes,
+    host,
+    countdown,
+    restrictions,
+    factions,
+  };
+}
+
+function buildRoomParticipants(detail: RoomDetail): RoomParticipants {
+  return {
+    participants: cloneRoomDetail(detail).participants,
+  };
+}
+
+function buildRoomBetting(detail: RoomDetail): RoomBettingState {
+  return {
+    betting: cloneRoomDetail(detail).betting,
+  };
+}
+
+function buildRoomEvidence(detail: RoomDetail): RoomEvidenceState {
+  return {
+    evidenceGroups: cloneRoomDetail(detail).evidenceGroups,
+  };
+}
+
+function buildRoomChat(detail: RoomDetail): RoomChatState {
+  return {
+    chatMessages: cloneRoomDetail(detail).chatMessages,
+  };
+}
+
 function applyFilters(rooms: Room[], params: URLSearchParams): Room[] {
   // status 쿼리는 view로 동작: active | hot | new | ended
   const view = (params.get('view') ?? params.get('status')) as
@@ -439,6 +500,51 @@ export const roomsHandlers = [
     const url = new URL(request.url);
     const filtered = applyFilters(MOCK_ROOMS, url.searchParams);
     return HttpResponse.json({ rooms: filtered });
+  }),
+
+  http.get('*/rooms/:roomId/meta', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const detail = getStoredRoomDetail(roomId);
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json({ meta: buildRoomMeta(detail) });
+  }),
+
+  http.get('*/rooms/:roomId/participants', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const detail = getStoredRoomDetail(roomId);
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json(buildRoomParticipants(detail));
+  }),
+
+  http.get('*/rooms/:roomId/betting', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const detail = getStoredRoomDetail(roomId);
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json(buildRoomBetting(detail));
+  }),
+
+  http.get('*/rooms/:roomId/evidence', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const detail = getStoredRoomDetail(roomId);
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json(buildRoomEvidence(detail));
+  }),
+
+  http.get('*/rooms/:roomId/chat', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const detail = getStoredRoomDetail(roomId);
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json(buildRoomChat(detail));
   }),
 
   http.get('*/rooms/:roomId', async ({ params }) => {

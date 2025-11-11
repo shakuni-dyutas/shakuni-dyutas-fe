@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
@@ -31,18 +31,23 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
   const [localEvidenceGroups, setLocalEvidenceGroups] = useState(room?.evidenceGroups ?? []);
   const [localChatMessages, setLocalChatMessages] = useState(room?.chatMessages ?? []);
   const [hasPlacedBet, setHasPlacedBet] = useState(false);
+  const previousRoomIdRef = useRef<string | null>(room?.id ?? null);
 
   useEffect(() => {
     if (!room) {
       setLocalEvidenceGroups([]);
       setLocalChatMessages([]);
       setHasPlacedBet(false);
+      previousRoomIdRef.current = null;
       return;
     }
 
     setLocalEvidenceGroups(room.evidenceGroups);
     setLocalChatMessages(room.chatMessages);
-    setHasPlacedBet(false);
+    if (previousRoomIdRef.current !== room.id) {
+      setHasPlacedBet(false);
+      previousRoomIdRef.current = room.id;
+    }
   }, [room]);
 
   const roomData = useMemo(() => {

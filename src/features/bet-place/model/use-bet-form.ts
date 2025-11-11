@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
 import { type UseFormReturn, useForm } from 'react-hook-form';
 
-import type { RoomDetail } from '@/entities/room/types/room-detail';
+import type { RoomBettingState, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
 import { calcExpectedReturn } from '@/features/bet-place/lib/calc-expected-return';
 import {
   type BetFormValues,
@@ -10,8 +10,8 @@ import {
 } from '@/features/bet-place/model/bet-form-schema';
 
 interface UseBetFormParams {
-  factions: RoomDetail['factions'];
-  betting: RoomDetail['betting'];
+  factions: RoomFactionSnapshot[];
+  betting: RoomBettingState['betting'];
 }
 
 interface UseBetFormResult {
@@ -23,7 +23,7 @@ interface UseBetFormResult {
   handleQuickAdd: (value: number) => void;
   resetPoints: () => void;
   minBetPoints: number;
-  selectedSnapshot: RoomDetail['betting']['factions'][number] | undefined;
+  selectedSnapshot: RoomBettingState['betting']['factions'][number] | undefined;
   otherPoolPoints: number;
   expectedReturn: number;
 }

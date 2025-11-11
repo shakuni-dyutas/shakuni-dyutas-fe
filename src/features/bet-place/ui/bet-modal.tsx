@@ -3,7 +3,7 @@
 import { overlay } from 'overlay-kit';
 import { type AnimationEvent, useRef } from 'react';
 
-import type { RoomDetail } from '@/entities/room/types/room-detail';
+import type { RoomBettingState, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
 import { BET_QUICK_ADD_POINTS } from '@/features/bet-place/config/constants';
 import { useBetForm } from '@/features/bet-place/model/use-bet-form';
 import { useBetMutation } from '@/features/bet-place/model/use-bet-mutation';
@@ -24,8 +24,8 @@ import { Input } from '@/shared/ui/input';
 interface BetModalOptions {
   roomId: string;
   roomTitle: string;
-  factions: RoomDetail['factions'];
-  betting: RoomDetail['betting'];
+  factions: RoomFactionSnapshot[];
+  betting: RoomBettingState['betting'];
   onSuccess?: () => void;
 }
 

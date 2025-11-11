@@ -38,7 +38,7 @@ export interface RoomBettingSnapshot {
   factions: TeamBettingSnapshot[];
 }
 
-export interface RoomDetail {
+export interface RoomMeta {
   id: string;
   title: string;
   topic: string;
@@ -49,8 +49,34 @@ export interface RoomDetail {
   countdown: RoomCountdown;
   restrictions: RoomRestrictionConfig;
   factions: RoomFactionSnapshot[];
-  betting: RoomBettingSnapshot;
+}
+
+export interface RoomParticipants {
   participants: Participant[];
+}
+
+export interface RoomBettingState {
+  betting: RoomBettingSnapshot;
+}
+
+export interface RoomEvidenceState {
   evidenceGroups: RoomEvidenceGroup[];
+}
+
+export interface RoomChatState {
   chatMessages: ChatMessage[];
 }
+
+export interface RoomDetailDomains {
+  meta: RoomMeta;
+  participants: RoomParticipants;
+  betting: RoomBettingState;
+  evidence: RoomEvidenceState;
+  chat: RoomChatState;
+}
+
+export type RoomDetail = RoomMeta &
+  RoomParticipants &
+  RoomBettingState &
+  RoomEvidenceState &
+  RoomChatState;
