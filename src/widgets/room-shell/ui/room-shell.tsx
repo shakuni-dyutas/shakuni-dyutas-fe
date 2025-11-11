@@ -113,8 +113,13 @@ function RoomShell({ roomId }: RoomShellProps) {
       roomTitle: roomData.title,
       factions: roomData.factions,
       betting: roomData.betting,
-      onSuccess: () => {
+      onSuccess: (response) => {
         handleBetPlaced();
+        if (response.participants) {
+          queryClient.setQueryData(ROOM_QUERY_KEYS.participants(roomId), {
+            participants: response.participants,
+          });
+        }
         void Promise.all([
           queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.betting(roomId) }),
           queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.meta(roomId) }),

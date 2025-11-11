@@ -4,6 +4,7 @@ import { overlay } from 'overlay-kit';
 import { type AnimationEvent, useRef } from 'react';
 
 import type { RoomBettingState, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
+import type { PostRoomBetResponse } from '@/features/bet-place/api/post-room-bet';
 import { BET_QUICK_ADD_POINTS } from '@/features/bet-place/config/constants';
 import { useBetForm } from '@/features/bet-place/model/use-bet-form';
 import { useBetMutation } from '@/features/bet-place/model/use-bet-mutation';
@@ -26,7 +27,7 @@ interface BetModalOptions {
   roomTitle: string;
   factions: RoomFactionSnapshot[];
   betting: RoomBettingState['betting'];
-  onSuccess?: () => void;
+  onSuccess?: (response: PostRoomBetResponse) => void;
 }
 
 interface BetModalControllerProps extends BetModalOptions {

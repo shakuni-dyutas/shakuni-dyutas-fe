@@ -1,12 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
-import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { ParticipantProfile } from '@/entities/participant/types/participant';
+import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
 import type { TeamFactionId } from '@/entities/team/types/team-faction';
+import { useEvidenceMutation } from '@/features/evidence-submit/model/use-evidence-mutation';
 import type { EvidenceSubmitPayload } from '@/features/evidence-submit/ui/evidence-modal';
 
 interface UseRoomShellStateParams {
@@ -26,6 +28,7 @@ interface UseRoomShellStateResult {
 }
 
 function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellStateResult {
+  const queryClient = useQueryClient();
   const sessionUser = useSessionStore((state) => state.user);
   const currentUserId = sessionUser?.id ?? null;
   const [localEvidenceGroups, setLocalEvidenceGroups] = useState(room?.evidenceGroups ?? []);
@@ -90,63 +93,43 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
 
   const isEvidenceDisabled = !currentFaction || hasSubmittedEvidence;
 
+  const roomId = room?.id ?? null;
+
+  const handleEvidenceMutationSuccess = useCallback(
+    (nextGroups: RoomDetail['evidenceGroups']) => {
+      setLocalEvidenceGroups(nextGroups);
+      if (roomId) {
+        queryClient.setQueryData(ROOM_QUERY_KEYS.evidence(roomId), { evidenceGroups: nextGroups });
+      }
+    },
+    [queryClient, roomId],
+  );
+
+  const { submitEvidence } = useEvidenceMutation({
+    roomId,
+    onSuccess: (response) => handleEvidenceMutationSuccess(response.evidenceGroups),
+  });
+
   const handleEvidenceSubmit = useCallback(
     async (payload: EvidenceSubmitPayload) => {
       if (!room || !currentParticipant) {
-        return;
+        throw new Error('증거를 제출할 수 있는 참가자 정보를 찾을 수 없습니다.');
       }
 
-      const submissionId = generateTempId();
-      const newSubmission: EvidenceItem = {
-        id: submissionId,
-        roomId: room.id,
+      await submitEvidence({
         factionId: payload.factionId,
-        author: currentParticipant,
+        authorId: currentParticipant.id,
         summary: payload.summary,
         body: payload.body,
-        submittedAt: new Date().toISOString(),
-        status: 'submitted',
-        media: payload.images.map((file, index) => ({
-          id: `${submissionId}-media-${index}`,
-          type: 'image',
-          url: `local:${file.name}`,
-          sizeInBytes: file.size,
-        })),
-      };
-
-      setLocalEvidenceGroups((prev) => {
-        const factionName =
-          room.factions.find((faction) => faction.id === payload.factionId)?.name ?? '내 진영';
-
-        const nextGroups = prev.some((group) => group.factionId === payload.factionId)
-          ? prev.map((group) =>
-              group.factionId === payload.factionId
-                ? { ...group, submissions: [newSubmission, ...group.submissions] }
-                : group,
-            )
-          : [
-              ...prev,
-              {
-                factionId: payload.factionId,
-                factionName,
-                submissions: [newSubmission],
-              },
-            ];
-
-        return nextGroups;
+        images: payload.images,
       });
     },
-    [currentParticipant, room],
+    [currentParticipant, room, submitEvidence],
   );
 
   const handleChatSubmit = useCallback(
     (message: string) => {
-      // TODO: 현재 세션에 유저 정보가 없는 상태임. 세션 API가 복구되면 아래 조건으로 되돌리고,
-      // room 참가자/세션 사용자 정보를 서버 응답과 동기화한다.
-      // if (!room || !sessionUser) {
-      //   return;
-      // }
-      if (!room) {
+      if (!room || !sessionUser) {
         return;
       }
 

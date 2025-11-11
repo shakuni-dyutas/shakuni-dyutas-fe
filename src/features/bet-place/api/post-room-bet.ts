@@ -1,3 +1,4 @@
+import type { Participant } from '@/entities/participant/types/participant';
 import type { RoomBettingState, RoomFactionSnapshot } from '@/entities/room/types/room-detail';
 import { apiClient } from '@/shared/api/api-client';
 
@@ -10,6 +11,7 @@ interface PostRoomBetRequest {
 interface PostRoomBetResponse {
   betting: RoomBettingState['betting'];
   factions: RoomFactionSnapshot[];
+  participants?: Participant[];
   message?: string;
 }
 

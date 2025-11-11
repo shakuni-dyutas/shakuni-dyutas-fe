@@ -18,6 +18,7 @@ import type {
   RoomParticipants,
 } from '@/entities/room/types/room-detail';
 import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/team-faction';
+import { MOCK_USER } from './constants';
 
 const ROOM_CREATE_ENDPOINT = '*/rooms';
 const ROOM_CREATION_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 1000;
@@ -366,6 +367,14 @@ function cloneRoomDetail(detail: RoomDetail): RoomDetail {
   return JSON.parse(JSON.stringify(detail)) as RoomDetail;
 }
 
+function generateMockId(prefix: string) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+
+  return `${prefix}-${Math.random().toString(36).slice(2)}`;
+}
+
 function buildRoomMeta(detail: RoomDetail): RoomMeta {
   const cloned = cloneRoomDetail(detail);
   const {
@@ -547,6 +556,117 @@ export const roomsHandlers = [
     return HttpResponse.json(buildRoomChat(detail));
   }),
 
+  http.post('*/rooms/:roomId/evidences', async ({ params, request }) => {
+    const { roomId } = params as { roomId: string };
+    const body = (await request.json()) as {
+      factionId?: string;
+      authorId?: string;
+      summary?: string;
+      body?: string;
+      images?: { name?: string; size?: number; type?: string }[];
+    };
+
+    const roomDetail = getStoredRoomDetail(roomId);
+
+    if (!roomDetail) {
+      return HttpResponse.json({ message: '존재하지 않는 방입니다.' }, { status: 404 });
+    }
+
+    if (!body.factionId || !body.authorId || !body.summary || !body.body) {
+      return HttpResponse.json({ message: '필수 값이 누락되었어요.' }, { status: 400 });
+    }
+
+    const restrictions = roomDetail.restrictions.evidence;
+    const maxBytes = restrictions.imageMaxSizeMb * 1024 * 1024;
+
+    if (body.body.length > restrictions.textMaxLength) {
+      return HttpResponse.json(
+        { message: `본문은 ${restrictions.textMaxLength}자 이하로 작성해 주세요.` },
+        { status: 400 },
+      );
+    }
+
+    const attachments = body.images ?? [];
+
+    if (attachments.length > restrictions.imageMaxCount) {
+      return HttpResponse.json(
+        { message: `이미지는 최대 ${restrictions.imageMaxCount}장까지 첨부할 수 있어요.` },
+        { status: 400 },
+      );
+    }
+
+    if (attachments.some((file) => (file?.size ?? maxBytes + 1) > maxBytes)) {
+      return HttpResponse.json(
+        { message: `${restrictions.imageMaxSizeMb}MB 이하 이미지만 첨부할 수 있어요.` },
+        { status: 413 },
+      );
+    }
+
+    const alreadySubmitted = roomDetail.evidenceGroups.some((group) =>
+      group.submissions.some((submission) => submission.author.id === body.authorId),
+    );
+
+    if (alreadySubmitted) {
+      return HttpResponse.json(
+        { message: '이미 증거를 제출했어요. 한 번만 제출할 수 있어요.' },
+        { status: 409 },
+      );
+    }
+
+    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === body.factionId);
+    if (!factionSnapshot) {
+      return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
+    }
+
+    const authorProfile =
+      roomDetail.participants.find((participant) => participant.id === body.authorId) ?? null;
+
+    if (!authorProfile) {
+      return HttpResponse.json(
+        { message: '방 참가자만 증거를 제출할 수 있어요.' },
+        { status: 403 },
+      );
+    }
+
+    const newEvidence: EvidenceItem = {
+      id: generateMockId('evidence'),
+      roomId,
+      factionId: body.factionId,
+      author: authorProfile,
+      summary: body.summary,
+      body: body.body,
+      submittedAt: new Date().toISOString(),
+      status: 'submitted',
+      media: attachments.map((file, index) => ({
+        id: `${roomId}-evidence-media-${index}-${Date.now()}`,
+        type: 'image',
+        url: `/mock/uploads/${encodeURIComponent(file?.name ?? 'evidence')}`,
+        sizeInBytes: file?.size ?? 0,
+      })),
+    };
+
+    const targetGroup = roomDetail.evidenceGroups.find(
+      (group) => group.factionId === body.factionId,
+    );
+
+    if (targetGroup) {
+      targetGroup.submissions = [newEvidence, ...targetGroup.submissions];
+    } else {
+      roomDetail.evidenceGroups.unshift({
+        factionId: body.factionId,
+        factionName: factionSnapshot.name,
+        submissions: [newEvidence],
+      });
+    }
+
+    factionSnapshot.evidenceCount += 1;
+
+    return HttpResponse.json({
+      evidenceGroups: cloneRoomDetail(roomDetail).evidenceGroups,
+      message: '증거 제출이 완료되었어요.',
+    });
+  }),
+
   http.get('*/rooms/:roomId', async ({ params }) => {
     const { roomId } = params as { roomId: string };
 
@@ -587,9 +707,47 @@ export const roomsHandlers = [
     roomDetail.betting.totalPoolPoints += body.points;
     factionSnapshot.totalBetPoints += body.points;
 
+    const existingParticipant = roomDetail.participants.find(
+      (participant) => participant.id === MOCK_USER.id,
+    );
+
+    if (existingParticipant) {
+      if (existingParticipant.factionId !== body.factionId) {
+        const previousFaction = roomDetail.factions.find(
+          (faction) => faction.id === existingParticipant.factionId,
+        );
+
+        if (previousFaction && previousFaction.memberCount > 0) {
+          previousFaction.memberCount -= 1;
+        }
+
+        existingParticipant.factionId = body.factionId;
+        factionSnapshot.memberCount += 1;
+      }
+
+      existingParticipant.totalBetPoints += body.points;
+      existingParticipant.status = 'online';
+    } else {
+      roomDetail.participants = [
+        ...roomDetail.participants,
+        {
+          id: MOCK_USER.id,
+          nickname: MOCK_USER.nickname ?? MOCK_USER.name ?? 'Mock User',
+          avatarUrl: MOCK_USER.avatarUrl ?? undefined,
+          factionId: body.factionId,
+          status: 'online',
+          role: 'member',
+          joinedAt: new Date().toISOString(),
+          totalBetPoints: body.points,
+        },
+      ];
+      factionSnapshot.memberCount += 1;
+    }
+
     return HttpResponse.json({
       betting: cloneRoomDetail(roomDetail).betting,
       factions: cloneRoomDetail(roomDetail).factions,
+      participants: cloneRoomDetail(roomDetail).participants,
       message: '배팅이 완료되었어요.',
     });
   }),
