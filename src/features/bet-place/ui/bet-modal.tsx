@@ -6,7 +6,9 @@ import { type AnimationEvent, useRef } from 'react';
 import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { BET_QUICK_ADD_POINTS } from '@/features/bet-place/config/constants';
 import { useBetForm } from '@/features/bet-place/model/use-bet-form';
+import { useBetMutation } from '@/features/bet-place/model/use-bet-mutation';
 import { cn } from '@/shared/lib/utils';
+import { ReactQueryProvider } from '@/shared/providers/react-query-provider';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -20,9 +22,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/shared/ui/input';
 
 interface BetModalOptions {
+  roomId: string;
   roomTitle: string;
   factions: RoomDetail['factions'];
   betting: RoomDetail['betting'];
+  onSuccess?: () => void;
 }
 
 interface BetModalControllerProps extends BetModalOptions {
@@ -33,12 +37,14 @@ interface BetModalControllerProps extends BetModalOptions {
 }
 
 function BetModalController({
+  roomId,
   isOpen,
   close,
   unmount,
   roomTitle,
   factions,
   betting,
+  onSuccess,
 }: BetModalControllerProps) {
   const {
     form,
@@ -53,6 +59,7 @@ function BetModalController({
     otherPoolPoints,
     expectedReturn,
   } = useBetForm({ factions, betting });
+  const { submitBet, isSubmitting } = useBetMutation({ roomId, onSuccess });
 
   const shouldUnmountRef = useRef(false);
   const lastActionRef = useRef<'none' | 'submit' | 'cancel' | 'system'>('none');
@@ -68,7 +75,8 @@ function BetModalController({
     close(null);
   };
 
-  const handleSubmit = form.handleSubmit(() => {
+  const handleSubmit = form.handleSubmit(async (values) => {
+    await submitBet({ factionId: values.factionId, points: Number(values.points) });
     requestClose('submit');
   });
 
@@ -222,7 +230,7 @@ function BetModalController({
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={!form.formState.isValid || form.formState.isSubmitting}
+                disabled={!form.formState.isValid || form.formState.isSubmitting || isSubmitting}
               >
                 배팅하기
               </Button>
@@ -236,7 +244,9 @@ function BetModalController({
 
 function openBetModal(options: BetModalOptions) {
   return overlay.openAsync<null>((controllerProps) => (
-    <BetModalController {...controllerProps} {...options} />
+    <ReactQueryProvider>
+      <BetModalController {...controllerProps} {...options} />
+    </ReactQueryProvider>
   ));
 }
 

@@ -343,6 +343,21 @@ function buildRoomDetailMock(roomId: string, options: BuildRoomDetailMockOptions
   };
 }
 
+const roomDetailStore = new Map<string, RoomDetail>();
+
+function getStoredRoomDetail(roomId: string) {
+  let detail = roomDetailStore.get(roomId);
+  if (!detail) {
+    detail = buildRoomDetailMock(roomId);
+    roomDetailStore.set(roomId, detail);
+  }
+  return detail;
+}
+
+function cloneRoomDetail(detail: RoomDetail): RoomDetail {
+  return JSON.parse(JSON.stringify(detail)) as RoomDetail;
+}
+
 function applyFilters(rooms: Room[], params: URLSearchParams): Room[] {
   // status 쿼리는 view로 동작: active | hot | new | ended
   const view = (params.get('view') ?? params.get('status')) as
@@ -431,6 +446,45 @@ export const roomsHandlers = [
 
     await delay(ROOM_DETAIL_DELAY_MS);
 
-    return HttpResponse.json({ room: buildRoomDetailMock(roomId) });
+    return HttpResponse.json({ room: cloneRoomDetail(getStoredRoomDetail(roomId)) });
+  }),
+
+  http.post('*/rooms/:roomId/bets', async ({ params, request }) => {
+    const { roomId } = params as { roomId: string };
+    const body = (await request.json()) as { factionId?: string; points?: number };
+
+    if (!body.factionId || typeof body.points !== 'number') {
+      return HttpResponse.json({ message: '진영과 포인트를 모두 입력해 주세요.' }, { status: 400 });
+    }
+
+    const roomDetail = getStoredRoomDetail(roomId);
+
+    if (!roomDetail) {
+      return HttpResponse.json({ message: '존재하지 않는 방입니다.' }, { status: 404 });
+    }
+
+    if (body.points < roomDetail.betting.minBetPoints) {
+      return HttpResponse.json({ message: '최소 배팅 포인트보다 적습니다.' }, { status: 400 });
+    }
+
+    const bettingSnapshot = roomDetail.betting.factions.find(
+      (snapshot) => snapshot.factionId === body.factionId,
+    );
+
+    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === body.factionId);
+
+    if (!bettingSnapshot || !factionSnapshot) {
+      return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
+    }
+
+    bettingSnapshot.totalBetPoints += body.points;
+    roomDetail.betting.totalPoolPoints += body.points;
+    factionSnapshot.totalBetPoints += body.points;
+
+    return HttpResponse.json({
+      betting: cloneRoomDetail(roomDetail).betting,
+      factions: cloneRoomDetail(roomDetail).factions,
+      message: '배팅이 완료되었어요.',
+    });
   }),
 ];

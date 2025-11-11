@@ -19,6 +19,8 @@ interface UseRoomShellStateResult {
   currentFaction: RoomDetail['factions'][number] | null;
   hasSubmittedEvidence: boolean;
   isEvidenceDisabled: boolean;
+  hasPlacedBet: boolean;
+  handleBetPlaced: () => void;
   handleEvidenceSubmit: (payload: EvidenceSubmitPayload) => Promise<void>;
   handleChatSubmit: (message: string) => void;
 }
@@ -28,16 +30,19 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
   const currentUserId = sessionUser?.id ?? null;
   const [localEvidenceGroups, setLocalEvidenceGroups] = useState(room?.evidenceGroups ?? []);
   const [localChatMessages, setLocalChatMessages] = useState(room?.chatMessages ?? []);
+  const [hasPlacedBet, setHasPlacedBet] = useState(false);
 
   useEffect(() => {
     if (!room) {
       setLocalEvidenceGroups([]);
       setLocalChatMessages([]);
+      setHasPlacedBet(false);
       return;
     }
 
     setLocalEvidenceGroups(room.evidenceGroups);
     setLocalChatMessages(room.chatMessages);
+    setHasPlacedBet(false);
   }, [room]);
 
   const roomData = useMemo(() => {
@@ -174,12 +179,18 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
     [currentParticipant, room, sessionUser],
   );
 
+  const handleBetPlaced = useCallback(() => {
+    setHasPlacedBet(true);
+  }, []);
+
   return {
     roomData,
     currentUserId,
     currentFaction,
     hasSubmittedEvidence,
     isEvidenceDisabled,
+    hasPlacedBet,
+    handleBetPlaced,
     handleEvidenceSubmit,
     handleChatSubmit,
   };

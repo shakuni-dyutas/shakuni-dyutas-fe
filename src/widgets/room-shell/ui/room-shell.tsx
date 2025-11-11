@@ -25,6 +25,8 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
     currentFaction,
     hasSubmittedEvidence,
     isEvidenceDisabled,
+    hasPlacedBet,
+    handleBetPlaced,
     handleEvidenceSubmit,
     handleChatSubmit,
   } = useRoomShellState({ room });
@@ -49,9 +51,11 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
 
   const handleOpenBetModal = () => {
     openBetModal({
+      roomId: roomData.id,
       roomTitle: roomData.title,
       factions: roomData.factions,
       betting: roomData.betting,
+      onSuccess: handleBetPlaced,
     }).catch(() => {});
   };
 
@@ -87,6 +91,7 @@ function RoomShell({ room, isLoading, onRetry }: RoomShellProps) {
         isEvidenceDisabled={isEvidenceDisabled}
         hasSubmittedEvidence={hasSubmittedEvidence}
         maxLength={roomData.restrictions.chat.maxLength}
+        isBetDisabled={hasPlacedBet}
       />
     </div>
   );

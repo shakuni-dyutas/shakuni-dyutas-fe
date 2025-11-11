@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import type { KeyboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useChatInput } from '@/widgets/room-shell/model/use-chat-input';
@@ -62,7 +63,7 @@ describe('useChatInput', () => {
         key: 'Enter',
         shiftKey: false,
         preventDefault: vi.fn(),
-      } as any);
+      } as unknown as KeyboardEvent<HTMLInputElement>);
       result.current.handleCompositionEnd();
     });
 

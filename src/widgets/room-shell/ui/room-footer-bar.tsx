@@ -13,6 +13,7 @@ interface RoomFooterBarProps {
   isEvidenceDisabled?: boolean;
   hasSubmittedEvidence?: boolean;
   maxLength?: number;
+  isBetDisabled?: boolean;
 }
 
 function RoomFooterBar({
@@ -22,6 +23,7 @@ function RoomFooterBar({
   isEvidenceDisabled,
   hasSubmittedEvidence,
   maxLength = 500,
+  isBetDisabled,
 }: RoomFooterBarProps) {
   const inputId = useId();
   const descriptionId = `${inputId}-description`;
@@ -48,6 +50,7 @@ function RoomFooterBar({
           onEvidenceClick={onEvidenceClick}
           isEvidenceDisabled={isEvidenceDisabled}
           hasSubmittedEvidence={hasSubmittedEvidence}
+          isBetDisabled={isBetDisabled}
         />
         <form
           className="flex w-full gap-3"

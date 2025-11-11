@@ -7,6 +7,7 @@ interface RoomActionButtonsProps {
   onEvidenceClick?: () => void;
   isEvidenceDisabled?: boolean;
   hasSubmittedEvidence?: boolean;
+  isBetDisabled?: boolean;
 }
 
 function RoomActionButtons({
@@ -14,6 +15,7 @@ function RoomActionButtons({
   onEvidenceClick,
   isEvidenceDisabled,
   hasSubmittedEvidence,
+  isBetDisabled,
 }: RoomActionButtonsProps) {
   return (
     <div className="flex flex-row gap-3">
@@ -21,9 +23,10 @@ function RoomActionButtons({
         className="h-14 flex-1 rounded-full font-semibold text-base"
         size="lg"
         onClick={onBetClick}
+        disabled={isBetDisabled}
       >
         <Coins className="size-5" aria-hidden />
-        <span>배팅</span>
+        <span>{isBetDisabled ? '배팅 완료' : '배팅'}</span>
       </Button>
       <Button
         className="h-14 flex-1 rounded-full font-semibold text-base"
