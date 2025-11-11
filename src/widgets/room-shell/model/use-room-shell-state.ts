@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { ParticipantProfile } from '@/entities/participant/types/participant';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
-import type { RoomDetail } from '@/entities/room/types/room-detail';
+import type { RoomChatState, RoomDetail } from '@/entities/room/types/room-detail';
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
 import type { TeamFactionId } from '@/entities/team/types/team-faction';
+import { useChatMutation } from '@/features/chat-send/model/use-chat-mutation';
 import { useEvidenceMutation } from '@/features/evidence-submit/model/use-evidence-mutation';
 import type { EvidenceSubmitPayload } from '@/features/evidence-submit/ui/evidence-modal';
 
@@ -110,6 +111,27 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
     onSuccess: (response) => handleEvidenceMutationSuccess(response.evidenceGroups),
   });
 
+  const syncChatQuery = useCallback(
+    (updater: (messages: ChatMessage[]) => ChatMessage[]) => {
+      if (!roomId) {
+        return;
+      }
+
+      queryClient.setQueryData(
+        ROOM_QUERY_KEYS.chat(roomId),
+        (previousState: RoomChatState | undefined): RoomChatState => {
+          const currentMessages = previousState?.chatMessages ?? [];
+          return {
+            chatMessages: updater(currentMessages),
+          } satisfies RoomChatState;
+        },
+      );
+    },
+    [queryClient, roomId],
+  );
+
+  const { submitChat } = useChatMutation();
+
   const handleEvidenceSubmit = useCallback(
     async (payload: EvidenceSubmitPayload) => {
       if (!room || !currentParticipant) {
@@ -129,7 +151,7 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
 
   const handleChatSubmit = useCallback(
     (message: string) => {
-      if (!room || !sessionUser) {
+      if (!room) {
         return;
       }
 
@@ -152,9 +174,9 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
             };
 
       const factionId: TeamFactionId = currentParticipant?.factionId ?? TEAM_FACTION_NONE_ID;
-
-      const newMessage: ChatMessage = {
-        id: generateTempId(),
+      const optimisticId = generateTempId();
+      const optimisticMessage: ChatMessage = {
+        id: optimisticId,
         roomId: room.id,
         factionId,
         author: authorProfile,
@@ -162,9 +184,25 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
         createdAt: new Date().toISOString(),
       };
 
-      setLocalChatMessages((prev) => [newMessage, ...prev]);
+      setLocalChatMessages((prev) => [optimisticMessage, ...prev]);
+      syncChatQuery((prev) => [optimisticMessage, ...prev]);
+
+      void submitChat({
+        roomId: room.id,
+        authorId: authorProfile.id,
+        factionId,
+        body: message,
+      })
+        .then((response) => {
+          setLocalChatMessages((prev) => replaceChatMessage(prev, optimisticId, response.message));
+          syncChatQuery((prev) => replaceChatMessage(prev, optimisticId, response.message));
+        })
+        .catch(() => {
+          setLocalChatMessages((prev) => prev.filter((chat) => chat.id !== optimisticId));
+          syncChatQuery((prev) => prev.filter((chat) => chat.id !== optimisticId));
+        });
     },
-    [currentParticipant, room, sessionUser],
+    [currentParticipant, room, sessionUser, submitChat, syncChatQuery],
   );
 
   const handleBetPlaced = useCallback(() => {
@@ -194,3 +232,13 @@ function generateTempId() {
 
 export type { UseRoomShellStateParams, UseRoomShellStateResult };
 export { useRoomShellState };
+
+function replaceChatMessage(messages: ChatMessage[], targetId: string, nextMessage: ChatMessage) {
+  const hasTarget = messages.some((message) => message.id === targetId);
+
+  if (!hasTarget) {
+    return [nextMessage, ...messages];
+  }
+
+  return messages.map((message) => (message.id === targetId ? nextMessage : message));
+}

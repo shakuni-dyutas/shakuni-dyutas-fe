@@ -1,7 +1,7 @@
 import { delay, HttpResponse, http } from 'msw';
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
-import type { Participant } from '@/entities/participant/types/participant';
+import type { Participant, ParticipantProfile } from '@/entities/participant/types/participant';
 import {
   getRoomFactionColor,
   ROOM_CHAT_CONSTRAINTS,
@@ -17,7 +17,12 @@ import type {
   RoomMeta,
   RoomParticipants,
 } from '@/entities/room/types/room-detail';
-import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/team-faction';
+import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
+import type {
+  TeamBettingSnapshot,
+  TeamFaction,
+  TeamFactionId,
+} from '@/entities/team/types/team-faction';
 import { MOCK_USER } from './constants';
 
 const ROOM_CREATE_ENDPOINT = '*/rooms';
@@ -628,10 +633,12 @@ export const roomsHandlers = [
       );
     }
 
+    const evidenceFactionId = body.factionId as TeamFactionId;
+
     const newEvidence: EvidenceItem = {
       id: generateMockId('evidence'),
       roomId,
-      factionId: body.factionId,
+      factionId: evidenceFactionId,
       author: authorProfile,
       summary: body.summary,
       body: body.body,
@@ -646,14 +653,14 @@ export const roomsHandlers = [
     };
 
     const targetGroup = roomDetail.evidenceGroups.find(
-      (group) => group.factionId === body.factionId,
+      (group) => group.factionId === evidenceFactionId,
     );
 
     if (targetGroup) {
       targetGroup.submissions = [newEvidence, ...targetGroup.submissions];
     } else {
       roomDetail.evidenceGroups.unshift({
-        factionId: body.factionId,
+        factionId: evidenceFactionId,
         factionName: factionSnapshot.name,
         submissions: [newEvidence],
       });
@@ -664,6 +671,79 @@ export const roomsHandlers = [
     return HttpResponse.json({
       evidenceGroups: cloneRoomDetail(roomDetail).evidenceGroups,
       message: '증거 제출이 완료되었어요.',
+    });
+  }),
+
+  http.post('*/rooms/:roomId/chat-messages', async ({ params, request }) => {
+    const { roomId } = params as { roomId: string };
+    const body = (await request.json()) as {
+      authorId?: string;
+      factionId?: string;
+      body?: string;
+    };
+
+    const roomDetail = getStoredRoomDetail(roomId);
+
+    if (!roomDetail) {
+      return HttpResponse.json({ message: '존재하지 않는 방입니다.' }, { status: 404 });
+    }
+
+    if (!body.authorId || !body.body) {
+      return HttpResponse.json({ message: '작성자와 메시지가 필요해요.' }, { status: 400 });
+    }
+
+    const trimmedBody = body.body.trim();
+    if (!trimmedBody) {
+      return HttpResponse.json({ message: '메시지를 입력해 주세요.' }, { status: 400 });
+    }
+
+    const maxLength = roomDetail.restrictions.chat.maxLength;
+    if (trimmedBody.length > maxLength) {
+      return HttpResponse.json(
+        { message: `메시지는 ${maxLength}자 이하로 입력해 주세요.` },
+        { status: 400 },
+      );
+    }
+
+    const authorParticipant = roomDetail.participants.find(
+      (participant) => participant.id === body.authorId,
+    );
+
+    const authorProfile: ParticipantProfile = authorParticipant
+      ? {
+          id: authorParticipant.id,
+          nickname: authorParticipant.nickname,
+          avatarUrl: authorParticipant.avatarUrl,
+        }
+      : {
+          id: body.authorId,
+          nickname:
+            body.authorId === MOCK_USER.id ? (MOCK_USER.nickname ?? MOCK_USER.name) : '익명',
+          avatarUrl:
+            body.authorId === MOCK_USER.id ? (MOCK_USER.avatarUrl ?? undefined) : undefined,
+        };
+
+    const factionId = (body.factionId ??
+      authorParticipant?.factionId ??
+      TEAM_FACTION_NONE_ID) as TeamFactionId;
+
+    const newMessage: ChatMessage = {
+      id: generateMockId('chat'),
+      roomId,
+      factionId,
+      author: {
+        id: authorProfile.id,
+        nickname: authorProfile.nickname,
+        avatarUrl: authorProfile.avatarUrl,
+      },
+      body: trimmedBody,
+      createdAt: new Date().toISOString(),
+    };
+
+    roomDetail.chatMessages = [newMessage, ...roomDetail.chatMessages];
+
+    return HttpResponse.json({
+      message: newMessage,
     });
   }),
 
@@ -721,7 +801,7 @@ export const roomsHandlers = [
           previousFaction.memberCount -= 1;
         }
 
-        existingParticipant.factionId = body.factionId;
+        existingParticipant.factionId = body.factionId as TeamFactionId;
         factionSnapshot.memberCount += 1;
       }
 
@@ -734,7 +814,7 @@ export const roomsHandlers = [
           id: MOCK_USER.id,
           nickname: MOCK_USER.nickname ?? MOCK_USER.name ?? 'Mock User',
           avatarUrl: MOCK_USER.avatarUrl ?? undefined,
-          factionId: body.factionId,
+          factionId: body.factionId as TeamFactionId,
           status: 'online',
           role: 'member',
           joinedAt: new Date().toISOString(),
