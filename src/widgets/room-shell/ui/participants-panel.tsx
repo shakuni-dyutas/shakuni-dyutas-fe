@@ -31,58 +31,60 @@ function ParticipantsPanel({ room }: ParticipantsPanelProps) {
             </CollapsibleTrigger>
           </div>
 
-          <CollapsibleContent className="space-y-4 overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
-            {room.factions.map((faction) => {
-              const members = room.participants.filter(
-                (participant) => participant.factionId === faction.id,
-              );
+          <CollapsibleContent className="overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[600px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
+            <div className="flex max-h-[28rem] flex-col gap-4 overflow-y-auto pr-1">
+              {room.factions.map((faction) => {
+                const members = room.participants.filter(
+                  (participant) => participant.factionId === faction.id,
+                );
 
-              return (
-                <Fragment key={faction.id}>
-                  <div className="flex items-center justify-between rounded-2xl bg-muted/30 px-3 py-2">
-                    <div>
-                      <p className="font-medium">{faction.name}</p>
-                      <p className="text-muted-foreground text-xs">{members.length}명 참여</p>
+                return (
+                  <Fragment key={faction.id}>
+                    <div className="flex items-center justify-between rounded-2xl bg-muted/30 px-3 py-2">
+                      <div>
+                        <p className="font-medium">{faction.name}</p>
+                        <p className="text-muted-foreground text-xs">{members.length}명 참여</p>
+                      </div>
+                      <Badge style={{ backgroundColor: faction.color }}>진영</Badge>
                     </div>
-                    <Badge style={{ backgroundColor: faction.color }}>진영</Badge>
-                  </div>
 
-                  <ul className="space-y-2">
-                    {members.length === 0 ? (
-                      <li className="rounded-xl border border-border/70 border-dashed px-3 py-2 text-muted-foreground text-sm">
-                        아직 참가자가 없습니다.
-                      </li>
-                    ) : (
-                      members.map((participant) => (
-                        <li
-                          key={participant.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-border/70 px-3 py-2"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-8">
-                              <AvatarImage
-                                src={participant.avatarUrl ?? undefined}
-                                alt={participant.nickname}
-                              />
-                              <AvatarFallback>{participant.nickname.slice(0, 1)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-sm">{participant.nickname}</p>
-                              <p className="text-muted-foreground text-xs">
-                                {participant.role === 'host' ? '방장' : '참가자'}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-muted-foreground text-xs">
-                            {participant.totalBetPoints.toLocaleString()} pts
-                          </span>
+                    <ul className="space-y-2">
+                      {members.length === 0 ? (
+                        <li className="rounded-xl border border-border/70 border-dashed px-3 py-2 text-muted-foreground text-sm">
+                          아직 참가자가 없습니다.
                         </li>
-                      ))
-                    )}
-                  </ul>
-                </Fragment>
-              );
-            })}
+                      ) : (
+                        members.map((participant) => (
+                          <li
+                            key={participant.id}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-border/70 px-3 py-2"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-8">
+                                <AvatarImage
+                                  src={participant.avatarUrl ?? undefined}
+                                  alt={participant.nickname}
+                                />
+                                <AvatarFallback>{participant.nickname.slice(0, 1)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm">{participant.nickname}</p>
+                                <p className="text-muted-foreground text-xs">
+                                  {participant.role === 'host' ? '방장' : '참가자'}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-muted-foreground text-xs">
+                              {participant.totalBetPoints.toLocaleString()} pts
+                            </span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </Fragment>
+                );
+              })}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
