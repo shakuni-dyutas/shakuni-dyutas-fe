@@ -1,3 +1,7 @@
+'use client';
+
+import { useMemo } from 'react';
+
 import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { Card, CardContent } from '@/shared/ui/card';
 import { EvidenceGroupCard } from '@/widgets/room-shell/ui/evidence-group-card';
@@ -8,6 +12,12 @@ interface EvidenceSectionProps {
 }
 
 function EvidenceSection({ room, currentUserId }: EvidenceSectionProps) {
+  const orderedGroups = useMemo(
+    () =>
+      [...room.evidenceGroups].sort((a, b) => a.factionName.localeCompare(b.factionName, 'ko-KR')),
+    [room.evidenceGroups],
+  );
+
   if (room.evidenceGroups.length === 0) {
     return (
       <Card>
@@ -23,7 +33,7 @@ function EvidenceSection({ room, currentUserId }: EvidenceSectionProps) {
 
   return (
     <div className="space-y-4">
-      {room.evidenceGroups.map((group) => (
+      {orderedGroups.map((group) => (
         <EvidenceGroupCard
           key={group.factionId}
           room={room}

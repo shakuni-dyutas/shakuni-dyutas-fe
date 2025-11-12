@@ -111,7 +111,7 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
   {
     id: 'user-1',
     nickname: '호스트아키',
-    avatarUrl: '/mock/avatar-host.png',
+    avatarUrl: 'https://placehold.co/96x96/1d4ed8/ffffff?text=H',
     factionId: 'faction-alpha',
     status: 'online',
     role: 'host',
@@ -121,7 +121,7 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
   {
     id: 'user-2',
     nickname: '데이터여왕',
-    avatarUrl: '/mock/avatar-02.png',
+    avatarUrl: 'https://placehold.co/96x96/2563eb/ffffff?text=D',
     factionId: 'faction-alpha',
     status: 'online',
     role: 'member',
@@ -131,7 +131,7 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
   {
     id: 'user-3',
     nickname: '감성파상어',
-    avatarUrl: '/mock/avatar-03.png',
+    avatarUrl: 'https://placehold.co/96x96/ea580c/ffffff?text=E',
     factionId: 'faction-beta',
     status: 'online',
     role: 'member',
@@ -141,7 +141,7 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
   {
     id: 'user-4',
     nickname: '밈장군',
-    avatarUrl: '/mock/avatar-04.png',
+    avatarUrl: 'https://placehold.co/96x96/22c55e/ffffff?text=M',
     factionId: 'faction-beta',
     status: 'offline',
     role: 'member',
@@ -151,7 +151,7 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
   {
     id: 'user-5',
     nickname: '팩트폭격기',
-    avatarUrl: '/mock/avatar-05.png',
+    avatarUrl: 'https://placehold.co/96x96/f97316/ffffff?text=F',
     factionId: 'faction-alpha',
     status: 'online',
     role: 'member',
@@ -168,7 +168,7 @@ const ROOM_DETAIL_CHAT_MESSAGES: ChatMessage[] = [
     author: {
       id: 'user-1',
       nickname: '호스트아키',
-      avatarUrl: '/mock/avatar-host.png',
+      avatarUrl: 'https://placehold.co/96x96/1d4ed8/ffffff?text=H',
     },
     body: '오늘 라운드는 감정 노동 자동화가 주제입니다. 자료 준비해 주세요!',
     createdAt: '2025-11-08T02:32:00.000Z',
@@ -180,7 +180,7 @@ const ROOM_DETAIL_CHAT_MESSAGES: ChatMessage[] = [
     author: {
       id: 'user-3',
       nickname: '감성파상어',
-      avatarUrl: '/mock/avatar-03.png',
+      avatarUrl: 'https://placehold.co/96x96/ea580c/ffffff?text=E',
     },
     body: 'AI는 공감이 없어서 CS 만족도가 떨어진 사례가 있습니다.',
     createdAt: '2025-11-08T02:36:00.000Z',
@@ -192,7 +192,7 @@ const ROOM_DETAIL_CHAT_MESSAGES: ChatMessage[] = [
     author: {
       id: 'user-2',
       nickname: '데이터여왕',
-      avatarUrl: '/mock/avatar-02.png',
+      avatarUrl: 'https://placehold.co/96x96/2563eb/ffffff?text=D',
     },
     body: '반대로 AI 덕분에 상담 대기 시간이 40% 줄어들었습니다.',
     createdAt: '2025-11-08T02:38:00.000Z',
@@ -207,7 +207,7 @@ const ROOM_DETAIL_EVIDENCE_ITEMS: EvidenceItem[] = [
     author: {
       id: 'user-2',
       nickname: '데이터여왕',
-      avatarUrl: '/mock/avatar-02.png',
+      avatarUrl: 'https://placehold.co/96x96/2563eb/ffffff?text=D',
     },
     summary: '콜센터 자동화 성공 사례',
     body: 'AI 보조 상담 도입 후 평균 처리 시간이 35% 단축.',
@@ -217,8 +217,8 @@ const ROOM_DETAIL_EVIDENCE_ITEMS: EvidenceItem[] = [
       {
         id: 'img-1',
         type: 'image',
-        url: '/mock/evidence/alpha-graph.png',
-        thumbnailUrl: '/mock/evidence/alpha-graph-thumb.png',
+        url: 'https://placehold.co/600x360/dbeafe/1d4ed8.png?text=AI+Efficiency',
+        thumbnailUrl: 'https://placehold.co/300x200/e5e7eb/1d4ed8.png?text=AI+Efficiency',
         sizeInBytes: 450_000,
         description: '효율성 비교 그래프',
       },
@@ -231,7 +231,7 @@ const ROOM_DETAIL_EVIDENCE_ITEMS: EvidenceItem[] = [
     author: {
       id: 'user-3',
       nickname: '감성파상어',
-      avatarUrl: '/mock/avatar-03.png',
+      avatarUrl: 'https://placehold.co/96x96/ea580c/ffffff?text=E',
     },
     summary: 'AI 공감 실패 사례',
     body: '감정 케어 실패로 고객 불만이 폭증한 보고서를 첨부합니다.',
@@ -241,8 +241,8 @@ const ROOM_DETAIL_EVIDENCE_ITEMS: EvidenceItem[] = [
       {
         id: 'img-2',
         type: 'image',
-        url: '/mock/evidence/beta-sentiment.png',
-        thumbnailUrl: '/mock/evidence/beta-sentiment-thumb.png',
+        url: 'https://placehold.co/600x360/fee2e2/b91c1c.png?text=Empathy+Fail',
+        thumbnailUrl: 'https://placehold.co/300x200/fecaca/b91c1c.png?text=Empathy+Fail',
         sizeInBytes: 530_000,
         description: 'CS 만족도 하락 그래프',
       },
@@ -647,8 +647,13 @@ export const roomsHandlers = [
       media: attachments.map((file, index) => ({
         id: `${roomId}-evidence-media-${index}-${Date.now()}`,
         type: 'image',
-        url: `/mock/uploads/${encodeURIComponent(file?.name ?? 'evidence')}`,
+        url: `https://placehold.co/600x360/faf5ff/6d28d9.png?text=${encodeURIComponent(
+          `Evidence ${index + 1}`,
+        )}`,
         sizeInBytes: file?.size ?? 0,
+        thumbnailUrl: `https://placehold.co/300x200/ede9fe/6d28d9.png?text=${encodeURIComponent(
+          `Evidence ${index + 1}`,
+        )}`,
       })),
     };
 

@@ -1,5 +1,8 @@
+'use client';
+
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import Image from 'next/image';
+import { useMemo, useState } from 'react';
 
 import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { cn } from '@/shared/lib/utils';
@@ -16,6 +19,13 @@ interface EvidenceGroupCardProps {
 
 function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProps) {
   const [open, setOpen] = useState(true);
+  const submissions = useMemo(
+    () =>
+      [...group.submissions].sort(
+        (a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime(),
+      ),
+    [group.submissions],
+  );
 
   return (
     <Card className="overflow-hidden">
@@ -41,9 +51,10 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
               </CollapsibleTrigger>
             </div>
           </div>
-          <CollapsibleContent className="space-y-4 overflow-hidden text-sm transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
-            {group.submissions.slice(0, 3).map((submission) => {
+          <CollapsibleContent className="flex flex-col gap-4 overflow-hidden text-sm transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
+            {submissions.map((submission) => {
               const isMine = Boolean(currentUserId && submission.author.id === currentUserId);
+              const attachments = submission.media.filter((media) => media.type === 'image');
 
               return (
                 <article
@@ -52,10 +63,10 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
                 >
                   <div
                     className={cn(
-                      'flex max-w-2xl items-start gap-3 rounded-3xl border border-border/70 px-4 py-3 shadow-sm',
+                      'flex max-w-2xl flex-col gap-3 rounded-3xl border px-4 py-3 shadow-sm sm:flex-row',
                       isMine
-                        ? 'flex-row-reverse bg-primary text-primary-foreground'
-                        : 'bg-card/80 text-foreground',
+                        ? 'border-primary/40 bg-primary/10 text-foreground sm:flex-row-reverse'
+                        : 'border-border/70 bg-card/80 text-foreground',
                     )}
                   >
                     <Avatar className="size-10 border border-border/60">
@@ -65,12 +76,52 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
                       />
                       <AvatarFallback>{submission.author.nickname.slice(0, 1)}</AvatarFallback>
                     </Avatar>
-                    <div className={cn('space-y-1 text-left', isMine && 'text-right')}>
-                      <p className="text-muted-foreground text-xs uppercase">
-                        {isMine ? '나의 증거' : submission.author.nickname}
-                      </p>
-                      <p className="font-semibold text-base">{submission.summary}</p>
-                      <p className="text-sm opacity-90">{submission.body}</p>
+                    <div className={cn('flex-1 space-y-2 text-left', isMine && 'text-right')}>
+                      <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+                        <Badge
+                          variant={isMine ? 'default' : 'secondary'}
+                          className={cn(
+                            'rounded-full px-2 py-0 text-[11px] uppercase tracking-tight',
+                            isMine
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-foreground',
+                          )}
+                        >
+                          {isMine ? '나의 증거' : submission.author.nickname}
+                        </Badge>
+                        <span>
+                          {new Intl.DateTimeFormat('ko-KR').format(
+                            new Date(submission.submittedAt),
+                          )}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-base">{submission.summary}</p>
+                        <p className="text-sm opacity-90">{submission.body}</p>
+                      </div>
+                      {attachments.length > 0 ? (
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {attachments.slice(0, 3).map((media) => (
+                            <div
+                              key={media.id}
+                              className="relative aspect-video overflow-hidden rounded-2xl border border-border/60 bg-muted"
+                            >
+                              <Image
+                                src={media.url}
+                                alt={`${submission.summary} 첨부 이미지`}
+                                fill
+                                sizes="200px"
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                          {attachments.length > 3 ? (
+                            <div className="flex items-center justify-center rounded-2xl border border-border/60 border-dashed text-muted-foreground text-xs">
+                              +{attachments.length - 3} 이미지
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </article>
@@ -78,12 +129,6 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
             })}
           </CollapsibleContent>
         </Collapsible>
-
-        {group.submissions.length > 3 ? (
-          <p className="text-muted-foreground text-sm">
-            +{group.submissions.length - 3}개의 추가 증거 · 접기/펼치기는 후속 단계에서 제공됩니다.
-          </p>
-        ) : null}
       </CardContent>
     </Card>
   );

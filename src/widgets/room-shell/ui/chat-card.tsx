@@ -1,5 +1,8 @@
+'use client';
+
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+
 import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
 import { cn } from '@/shared/lib/utils';
@@ -15,6 +18,13 @@ interface ChatCardProps {
 
 function ChatCard({ room, currentUserId }: ChatCardProps) {
   const [open, setOpen] = useState(true);
+  const orderedMessages = useMemo(
+    () =>
+      [...room.chatMessages].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
+    [room.chatMessages],
+  );
 
   return (
     <Card>
@@ -36,8 +46,8 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
             </div>
           </div>
           <CollapsibleContent className="overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
-            <div className="max-h-[28rem] space-y-4 overflow-y-auto pr-1">
-              {room.chatMessages.map((message) => {
+            <div className="flex max-h-[28rem] flex-col gap-4 overflow-y-auto pr-1">
+              {orderedMessages.map((message) => {
                 const isMine = Boolean(currentUserId && message.author.id === currentUserId);
 
                 return (
@@ -47,10 +57,10 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
                   >
                     <div
                       className={cn(
-                        'flex max-w-2xl items-start gap-3 rounded-3xl px-4 py-3',
+                        'flex max-w-2xl items-start gap-3 rounded-3xl border px-4 py-3 shadow-sm',
                         isMine
-                          ? 'flex-row-reverse bg-primary text-primary-foreground'
-                          : 'bg-muted/30 text-foreground',
+                          ? 'flex-row-reverse border-primary/40 bg-primary/10 text-foreground'
+                          : 'border-border/70 bg-muted/40 text-foreground',
                       )}
                     >
                       <Avatar className="size-9 border border-border/70">
@@ -60,19 +70,31 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
                         />
                         <AvatarFallback>{message.author.nickname.slice(0, 1)}</AvatarFallback>
                       </Avatar>
-                      <div className={cn('space-y-1 text-left', isMine && 'text-right')}>
+                      <div className={cn('space-y-1 text-left text-sm', isMine && 'text-right')}>
                         <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-                          <span className="font-semibold text-foreground">
-                            {isMine ? '나' : message.author.nickname}
-                          </span>
                           <Badge
-                            style={{ backgroundColor: findFactionColor(room, message.factionId) }}
+                            variant={isMine ? 'default' : 'secondary'}
+                            className={cn(
+                              'rounded-full px-2 py-0 text-[11px] uppercase tracking-tight',
+                              isMine
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-foreground',
+                            )}
+                          >
+                            {isMine ? '나' : message.author.nickname}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            style={{
+                              borderColor: findFactionColor(room, message.factionId),
+                              color: findFactionColor(room, message.factionId),
+                            }}
                           >
                             {resolveFactionName(room, message.factionId)}
                           </Badge>
-                          <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+                          <span>{formatChatTimestamp(message.createdAt)}</span>
                         </div>
-                        <p className="text-sm">{message.body}</p>
+                        <p>{message.body}</p>
                       </div>
                     </div>
                   </article>
@@ -90,6 +112,13 @@ const DEFAULT_FACTION_COLOR = '#475569';
 
 function findFactionColor(room: RoomDetail, factionId: string) {
   return room.factions.find((faction) => faction.id === factionId)?.color ?? DEFAULT_FACTION_COLOR;
+}
+
+function formatChatTimestamp(timestamp: string) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: 'numeric',
+  }).format(new Date(timestamp));
 }
 
 function resolveFactionName(room: RoomDetail, factionId: string) {
