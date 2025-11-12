@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/ui/collapsible';
+import { ImageViewer } from '@/shared/ui/image-viewer';
 
 interface EvidenceGroupCardProps {
   room: RoomDetail;
@@ -101,27 +102,45 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
                           <p className="text-sm opacity-90">{submission.body}</p>
                         </div>
                         {attachments.length > 0 ? (
-                          <div className="grid auto-rows-[160px] grid-cols-2 gap-2">
-                            {attachments.slice(0, 3).map((media) => (
-                              <div
-                                key={media.id}
-                                className="relative h-full w-full overflow-hidden rounded-2xl border border-border/60 bg-muted"
-                              >
-                                <Image
-                                  src={media.url}
-                                  alt={`${submission.summary} 첨부 이미지`}
-                                  fill
-                                  sizes="200px"
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                            {attachments.length > 3 ? (
-                              <div className="flex h-full items-center justify-center rounded-2xl border border-border/60 border-dashed text-muted-foreground text-xs">
-                                +{attachments.length - 3} 이미지
-                              </div>
-                            ) : null}
-                          </div>
+                          <ImageViewer
+                            images={attachments.map((media) => ({
+                              id: media.id,
+                              url: media.url,
+                              alt: `${submission.summary} 첨부 이미지`,
+                            }))}
+                            renderPreview={({ open, images }) => {
+                              const previewImages = images.slice(0, 3);
+                              return (
+                                <div className="grid auto-rows-[160px] grid-cols-2 gap-2">
+                                  {previewImages.map((image, previewIndex) => (
+                                    <button
+                                      key={image.id}
+                                      type="button"
+                                      className="relative h-full w-full overflow-hidden rounded-2xl border border-border/60 bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+                                      onClick={() => open(previewIndex)}
+                                    >
+                                      <Image
+                                        src={image.url}
+                                        alt={image.alt ?? '첨부 이미지'}
+                                        fill
+                                        sizes="200px"
+                                        className="object-cover"
+                                      />
+                                    </button>
+                                  ))}
+                                  {images.length > 3 ? (
+                                    <button
+                                      type="button"
+                                      className="flex h-full items-center justify-center rounded-2xl border border-border/60 border-dashed text-muted-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                                      onClick={() => open(3)}
+                                    >
+                                      +{images.length - 3} 이미지
+                                    </button>
+                                  ) : null}
+                                </div>
+                              );
+                            }}
+                          />
                         ) : null}
                       </div>
                     </div>
