@@ -1,16 +1,17 @@
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { Participant } from '@/entities/participant/types/participant';
+import type { RoomBettingState, RoomMeta } from '@/entities/room/types/room-detail';
 
-interface ChatCreatedEvent {
-  type: 'chat-created';
+interface ChatUpdatedEvent {
+  type: 'chat-updated';
   data: {
     message: ChatMessage;
   };
 }
 
-interface EvidenceSubmittedEvent {
-  type: 'evidence-submitted';
+interface EvidenceUpdatedEvent {
+  type: 'evidence-updated';
   data: {
     submission: EvidenceItem;
     factionId: string;
@@ -25,12 +26,21 @@ interface ParticipantUpdatedEvent {
   };
 }
 
+interface BettingUpdatedEvent {
+  type: 'betting-updated';
+  data: {
+    betting: RoomBettingState['betting'];
+    factions: RoomMeta['factions'];
+  };
+}
+
 interface KeepAliveEvent {
   type: 'keep-alive';
 }
 
 export type RoomServerEvent =
-  | ChatCreatedEvent
-  | EvidenceSubmittedEvent
+  | ChatUpdatedEvent
+  | EvidenceUpdatedEvent
   | ParticipantUpdatedEvent
+  | BettingUpdatedEvent
   | KeepAliveEvent;

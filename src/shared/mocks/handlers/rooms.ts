@@ -183,6 +183,15 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     joinedAt: '2025-11-08T02:44:00.000Z',
     totalBetPoints: 680,
   },
+  {
+    id: 'user-9',
+    nickname: '신규참가자',
+    avatarUrl: 'https://placehold.co/96x96/10b981/ffffff?text=N',
+    factionId: 'faction-alpha',
+    role: 'member',
+    joinedAt: '2025-11-08T02:50:00.000Z',
+    totalBetPoints: 0,
+  },
 ];
 
 const ROOM_DETAIL_CHAT_MESSAGES: ChatMessage[] = [
@@ -1148,7 +1157,7 @@ export const roomsHandlers = [
     roomDetail.chatMessages = [newMessage, ...roomDetail.chatMessages];
 
     broadcastRoomEvent(roomId, {
-      type: 'chat-created',
+      type: 'chat-updated',
       data: {
         message: cloneChatMessage(newMessage),
       },
@@ -1231,6 +1240,8 @@ export const roomsHandlers = [
       participantForBroadcast = roomDetail.participants[roomDetail.participants.length - 1];
     }
 
+    const clonedDetail = cloneRoomDetail(roomDetail);
+
     broadcastRoomEvent(roomId, {
       type: 'participant-updated',
       data: {
@@ -1238,10 +1249,18 @@ export const roomsHandlers = [
       },
     });
 
+    broadcastRoomEvent(roomId, {
+      type: 'betting-updated',
+      data: {
+        betting: clonedDetail.betting,
+        factions: clonedDetail.factions,
+      },
+    });
+
     return HttpResponse.json({
-      betting: cloneRoomDetail(roomDetail).betting,
-      factions: cloneRoomDetail(roomDetail).factions,
-      participants: cloneRoomDetail(roomDetail).participants,
+      betting: clonedDetail.betting,
+      factions: clonedDetail.factions,
+      participants: clonedDetail.participants,
       message: '배팅이 완료되었어요.',
     });
   }),
