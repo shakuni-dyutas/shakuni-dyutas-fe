@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { overlay } from 'overlay-kit';
 import { type AnimationEvent, type ChangeEvent, useEffect, useRef, useState } from 'react';
 
-import type { RoomRestrictionConfig } from '@/entities/room/types/room-detail';
+import { ROOM_EVIDENCE_CONSTRAINTS } from '@/entities/room/config/constants';
 import type { TeamFactionId } from '@/entities/team/types/team-faction';
 import { useEvidenceForm } from '@/features/evidence-submit/model/use-evidence-form';
 import { formatFileSize } from '@/shared/lib/utils';
@@ -35,7 +35,6 @@ interface EvidenceModalOptions {
     id: TeamFactionId;
     name: string;
   } | null;
-  restrictions: RoomRestrictionConfig['evidence'];
   hasSubmitted: boolean;
   onSubmit: (values: EvidenceSubmitPayload) => Promise<void> | void;
 }
@@ -60,11 +59,11 @@ function EvidenceModalController({
   unmount,
   roomTitle,
   faction,
-  restrictions,
   hasSubmitted,
   onSubmit,
 }: EvidenceModalControllerProps) {
-  const { form, appendFiles, removeImage, resetForm } = useEvidenceForm({ restrictions });
+  const restrictions = ROOM_EVIDENCE_CONSTRAINTS;
+  const { form, appendFiles, removeImage, resetForm } = useEvidenceForm();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const shouldUnmountRef = useRef(false);
   const lastActionRef = useRef<'none' | 'submit' | 'cancel'>('none');

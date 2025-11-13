@@ -1,6 +1,7 @@
 import { SendHorizonal } from 'lucide-react';
 import { useId } from 'react';
 
+import { ROOM_CHAT_CONSTRAINTS } from '@/entities/room/config/constants';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { useChatInput } from '@/widgets/room-shell/model/use-chat-input';
@@ -22,7 +23,7 @@ function RoomFooterBar({
   onEvidenceClick,
   isEvidenceDisabled,
   hasSubmittedEvidence,
-  maxLength = 500,
+  maxLength = ROOM_CHAT_CONSTRAINTS.maxLength,
   isBetDisabled,
 }: RoomFooterBarProps) {
   const inputId = useId();

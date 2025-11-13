@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
+import { ROOM_CHAT_CONSTRAINTS } from '@/entities/room/config/constants';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import { useRoomBetting } from '@/entities/room/model/use-room-betting';
 import { useRoomChat } from '@/entities/room/model/use-room-chat';
@@ -135,7 +136,6 @@ function RoomShell({ roomId }: RoomShellProps) {
     openEvidenceModal({
       roomTitle: roomData.title,
       faction: currentFaction,
-      restrictions: roomData.restrictions.evidence,
       hasSubmitted: hasSubmittedEvidence,
       onSubmit: handleEvidenceSubmit,
     }).catch(() => {});
@@ -162,7 +162,7 @@ function RoomShell({ roomId }: RoomShellProps) {
         onEvidenceClick={handleOpenEvidenceModal}
         isEvidenceDisabled={isEvidenceDisabled}
         hasSubmittedEvidence={hasSubmittedEvidence}
-        maxLength={roomData.restrictions.chat.maxLength}
+        maxLength={ROOM_CHAT_CONSTRAINTS.maxLength}
         isBetDisabled={hasPlacedBet}
       />
     </div>

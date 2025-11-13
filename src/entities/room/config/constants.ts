@@ -3,13 +3,13 @@
  */
 
 export const ROOM_EVIDENCE_CONSTRAINTS = {
-  TEXT_MAX_LENGTH: 1000,
-  IMAGE_MAX_SIZE_MB: 3,
-  IMAGE_MAX_COUNT: 3,
+  textMaxLength: 2000,
+  imageMaxSizeMb: 5,
+  imageMaxCount: 5,
 } as const;
 
 export const ROOM_CHAT_CONSTRAINTS = {
-  MAX_LENGTH: 500,
+  maxLength: 250,
 } as const;
 
 export const ROOM_FACTION_COLOR_SEQUENCE = [
@@ -18,6 +18,7 @@ export const ROOM_FACTION_COLOR_SEQUENCE = [
   '#F97316',
   '#10B981',
   '#A855F7',
+  '#F59E0B',
 ] as const;
 
 export function getRoomFactionColor(index: number): string {

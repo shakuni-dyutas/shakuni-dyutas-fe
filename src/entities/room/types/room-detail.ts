@@ -8,18 +8,6 @@ export interface RoomCountdown {
   remainingSeconds: number;
 }
 
-export interface RoomRestrictionConfig {
-  minBetPoints: number;
-  evidence: {
-    textMaxLength: number;
-    imageMaxSizeMb: number;
-    imageMaxCount: number;
-  };
-  chat: {
-    maxLength: number;
-  };
-}
-
 export interface RoomFactionSnapshot extends TeamFaction {
   memberCount: number;
   totalBetPoints: number;
@@ -47,7 +35,6 @@ export interface RoomMeta {
   timeLimitMinutes: number;
   host: ParticipantProfile;
   countdown: RoomCountdown;
-  restrictions: RoomRestrictionConfig;
   factions: RoomFactionSnapshot[];
 }
 

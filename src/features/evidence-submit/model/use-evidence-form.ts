@@ -2,14 +2,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { type UseFormReturn, useForm } from 'react-hook-form';
 
-import type { RoomRestrictionConfig } from '@/entities/room/types/room-detail';
+import { ROOM_EVIDENCE_CONSTRAINTS } from '@/entities/room/config/constants';
 import {
   createEvidenceFormSchema,
   type EvidenceFormValues,
+  type EvidenceRestrictions,
 } from '@/features/evidence-submit/model/evidence-form-schema';
 
 interface UseEvidenceFormParams {
-  restrictions: RoomRestrictionConfig['evidence'];
+  restrictions?: EvidenceRestrictions;
 }
 
 interface UseEvidenceFormResult {
@@ -19,7 +20,15 @@ interface UseEvidenceFormResult {
   resetForm: () => void;
 }
 
-function useEvidenceForm({ restrictions }: UseEvidenceFormParams): UseEvidenceFormResult {
+const DEFAULT_RESTRICTIONS: EvidenceRestrictions = {
+  textMaxLength: ROOM_EVIDENCE_CONSTRAINTS.textMaxLength,
+  imageMaxSizeMb: ROOM_EVIDENCE_CONSTRAINTS.imageMaxSizeMb,
+  imageMaxCount: ROOM_EVIDENCE_CONSTRAINTS.imageMaxCount,
+} as const;
+
+function useEvidenceForm({
+  restrictions = DEFAULT_RESTRICTIONS,
+}: UseEvidenceFormParams = {}): UseEvidenceFormResult {
   const schema = useMemo(() => createEvidenceFormSchema(restrictions), [restrictions]);
 
   const form = useForm<EvidenceFormValues>({

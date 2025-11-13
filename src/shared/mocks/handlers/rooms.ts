@@ -116,7 +116,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '정책설계자',
     avatarUrl: 'https://placehold.co/96x96/1d4ed8/ffffff?text=P1',
     factionId: 'faction-alpha',
-    status: 'online',
     role: 'host',
     joinedAt: '2025-11-08T02:30:00.000Z',
     totalBetPoints: 2_200,
@@ -126,7 +125,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '법학도',
     avatarUrl: 'https://placehold.co/96x96/2563eb/ffffff?text=L',
     factionId: 'faction-alpha',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:32:00.000Z',
     totalBetPoints: 1_100,
@@ -136,7 +134,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '데이터감독관',
     avatarUrl: 'https://placehold.co/96x96/f97316/ffffff?text=D',
     factionId: 'faction-alpha',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:34:00.000Z',
     totalBetPoints: 800,
@@ -146,7 +143,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '시민감시자',
     avatarUrl: 'https://placehold.co/96x96/0ea5e9/ffffff?text=C',
     factionId: 'faction-alpha',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:36:00.000Z',
     totalBetPoints: 600,
@@ -156,7 +152,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '혁신개발자',
     avatarUrl: 'https://placehold.co/96x96/ea580c/ffffff?text=I',
     factionId: 'faction-beta',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:38:00.000Z',
     totalBetPoints: 1_300,
@@ -166,7 +161,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '시장자유론자',
     avatarUrl: 'https://placehold.co/96x96/22c55e/ffffff?text=F',
     factionId: 'faction-beta',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:40:00.000Z',
     totalBetPoints: 950,
@@ -176,7 +170,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: '스타트업대표',
     avatarUrl: 'https://placehold.co/96x96/f59e0b/ffffff?text=S',
     factionId: 'faction-beta',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:42:00.000Z',
     totalBetPoints: 720,
@@ -186,7 +179,6 @@ const ROOM_DETAIL_PARTICIPANTS: Participant[] = [
     nickname: 'AI리서처',
     avatarUrl: 'https://placehold.co/96x96/14b8a6/ffffff?text=R',
     factionId: 'faction-beta',
-    status: 'online',
     role: 'member',
     joinedAt: '2025-11-08T02:44:00.000Z',
     totalBetPoints: 680,
@@ -707,17 +699,6 @@ function buildRoomDetailMock(roomId: string, options: BuildRoomDetailMockOptions
       endsAt,
       remainingSeconds: Math.max(timeLimitMinutes * 60 - 5 * 60, 0),
     },
-    restrictions: {
-      minBetPoints,
-      evidence: {
-        textMaxLength: ROOM_EVIDENCE_CONSTRAINTS.TEXT_MAX_LENGTH,
-        imageMaxSizeMb: ROOM_EVIDENCE_CONSTRAINTS.IMAGE_MAX_SIZE_MB,
-        imageMaxCount: ROOM_EVIDENCE_CONSTRAINTS.IMAGE_MAX_COUNT,
-      },
-      chat: {
-        maxLength: ROOM_CHAT_CONSTRAINTS.MAX_LENGTH,
-      },
-    },
     factions: factionsSnapshots,
     betting: {
       totalPoolPoints,
@@ -767,18 +748,8 @@ function generateMockId(prefix: string) {
 
 function buildRoomMeta(detail: RoomDetail): RoomMeta {
   const cloned = cloneRoomDetail(detail);
-  const {
-    id,
-    title,
-    topic,
-    description,
-    createdAt,
-    timeLimitMinutes,
-    host,
-    countdown,
-    restrictions,
-    factions,
-  } = cloned;
+  const { id, title, topic, description, createdAt, timeLimitMinutes, host, countdown, factions } =
+    cloned;
 
   return {
     id,
@@ -789,7 +760,6 @@ function buildRoomMeta(detail: RoomDetail): RoomMeta {
     timeLimitMinutes,
     host,
     countdown,
-    restrictions,
     factions,
   };
 }
@@ -1002,28 +972,28 @@ export const roomsHandlers = [
       return HttpResponse.json({ message: '필수 값이 누락되었어요.' }, { status: 400 });
     }
 
-    const restrictions = roomDetail.restrictions.evidence;
-    const maxBytes = restrictions.imageMaxSizeMb * 1024 * 1024;
+    const evidenceConstraints = ROOM_EVIDENCE_CONSTRAINTS;
+    const maxBytes = evidenceConstraints.imageMaxSizeMb * 1024 * 1024;
 
-    if (payload.body.length > restrictions.textMaxLength) {
+    if (payload.body.length > evidenceConstraints.textMaxLength) {
       return HttpResponse.json(
-        { message: `본문은 ${restrictions.textMaxLength}자 이하로 작성해 주세요.` },
+        { message: `본문은 ${evidenceConstraints.textMaxLength}자 이하로 작성해 주세요.` },
         { status: 400 },
       );
     }
 
     const attachments = payload.images;
 
-    if (attachments.length > restrictions.imageMaxCount) {
+    if (attachments.length > evidenceConstraints.imageMaxCount) {
       return HttpResponse.json(
-        { message: `이미지는 최대 ${restrictions.imageMaxCount}장까지 첨부할 수 있어요.` },
+        { message: `이미지는 최대 ${evidenceConstraints.imageMaxCount}장까지 첨부할 수 있어요.` },
         { status: 400 },
       );
     }
 
-    if (attachments.some((file) => (file?.size ?? maxBytes + 1) > maxBytes)) {
+    if (attachments.some((file) => file.size > maxBytes)) {
       return HttpResponse.json(
-        { message: `${restrictions.imageMaxSizeMb}MB 이하 이미지만 첨부할 수 있어요.` },
+        { message: `${evidenceConstraints.imageMaxSizeMb}MB 이하 이미지만 첨부할 수 있어요.` },
         { status: 413 },
       );
     }
@@ -1132,7 +1102,7 @@ export const roomsHandlers = [
       return HttpResponse.json({ message: '메시지를 입력해 주세요.' }, { status: 400 });
     }
 
-    const maxLength = roomDetail.restrictions.chat.maxLength;
+    const maxLength = ROOM_CHAT_CONSTRAINTS.maxLength;
     if (trimmedBody.length > maxLength) {
       return HttpResponse.json(
         { message: `메시지는 ${maxLength}자 이하로 입력해 주세요.` },
@@ -1187,14 +1157,6 @@ export const roomsHandlers = [
     return HttpResponse.json({
       message: newMessage,
     });
-  }),
-
-  http.get('*/rooms/:roomId', async ({ params }) => {
-    const { roomId } = params as { roomId: string };
-
-    await delay(ROOM_DETAIL_DELAY_MS);
-
-    return HttpResponse.json({ room: cloneRoomDetail(getStoredRoomDetail(roomId)) });
   }),
 
   http.post('*/rooms/:roomId/bets', async ({ params, request }) => {
@@ -1252,7 +1214,6 @@ export const roomsHandlers = [
       }
 
       existingParticipant.totalBetPoints += body.points;
-      existingParticipant.status = 'online';
     } else {
       roomDetail.participants = [
         ...roomDetail.participants,
@@ -1261,7 +1222,6 @@ export const roomsHandlers = [
           nickname: MOCK_USER.nickname ?? MOCK_USER.name ?? 'Mock User',
           avatarUrl: MOCK_USER.avatarUrl ?? undefined,
           factionId: body.factionId as TeamFactionId,
-          status: 'online',
           role: 'member',
           joinedAt: new Date().toISOString(),
           totalBetPoints: body.points,
