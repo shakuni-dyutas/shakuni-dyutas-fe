@@ -7,6 +7,7 @@ import { ROOM_CHAT_CONSTRAINTS } from '@/entities/room/config/constants';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import { useRoomBetting } from '@/entities/room/model/use-room-betting';
 import { useRoomChat } from '@/entities/room/model/use-room-chat';
+import { useRoomDetailSnapshot } from '@/entities/room/model/use-room-detail-snapshot';
 import { useRoomEvents } from '@/entities/room/model/use-room-events';
 import { useRoomEvidence } from '@/entities/room/model/use-room-evidence';
 import { useRoomMeta } from '@/entities/room/model/use-room-meta';
@@ -29,6 +30,7 @@ interface RoomShellProps {
 
 function RoomShell({ roomId }: RoomShellProps) {
   const queryClient = useQueryClient();
+  useRoomDetailSnapshot(roomId);
   const metaQuery = useRoomMeta(roomId);
   const participantsQuery = useRoomParticipants(roomId);
   const bettingQuery = useRoomBetting(roomId);
@@ -114,7 +116,7 @@ function RoomShell({ roomId }: RoomShellProps) {
     openBetModal({
       roomId: roomData.id,
       roomTitle: roomData.title,
-      factions: roomData.factions,
+      factions: roomData.betting.factions,
       betting: roomData.betting,
       onSuccess: (response) => {
         handleBetPlaced();

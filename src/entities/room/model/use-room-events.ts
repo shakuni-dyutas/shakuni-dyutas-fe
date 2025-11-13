@@ -9,7 +9,6 @@ import type {
   RoomBettingState,
   RoomChatState,
   RoomEvidenceState,
-  RoomMeta,
   RoomParticipants,
 } from '@/entities/room/types/room-detail';
 import type { TeamFactionId } from '@/entities/team/types/team-faction';
@@ -134,7 +133,6 @@ function useRoomEvents(roomId: string | null) {
     const handleBetting = (event: MessageEvent<string>) => {
       const payload = parseJson<{
         betting: RoomBettingState['betting'];
-        factions: RoomMeta['factions'];
       }>(event.data);
 
       if (!payload) {
@@ -145,14 +143,6 @@ function useRoomEvents(roomId: string | null) {
         ROOM_QUERY_KEYS.betting(roomId),
         (): RoomBettingState => ({ betting: payload.betting }),
       );
-
-      queryClient.setQueryData(ROOM_QUERY_KEYS.meta(roomId), (previous: RoomMeta | undefined) => {
-        if (!previous) {
-          return previous;
-        }
-
-        return { ...previous, factions: payload.factions } satisfies RoomMeta;
-      });
     };
 
     eventSource.addEventListener('chat-updated', handleChat);

@@ -156,7 +156,7 @@ function EvidenceGroupCard({ room, group, currentUserId }: EvidenceGroupCardProp
 }
 
 function findFactionColor(room: RoomDetail, factionId: string) {
-  return room.factions.find((faction) => faction.id === factionId)?.color ?? '#0ea5e9';
+  return room.betting.factions.find((faction) => faction.id === factionId)?.color ?? '#0ea5e9';
 }
 
 export { EvidenceGroupCard };

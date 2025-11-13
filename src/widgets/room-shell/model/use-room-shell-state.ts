@@ -19,7 +19,7 @@ interface UseRoomShellStateParams {
 interface UseRoomShellStateResult {
   roomData: RoomDetail | null;
   currentUserId: string | null;
-  currentFaction: RoomDetail['factions'][number] | null;
+  currentFaction: RoomDetail['betting']['factions'][number] | null;
   hasSubmittedEvidence: boolean;
   isEvidenceDisabled: boolean;
   hasPlacedBet: boolean;
@@ -79,7 +79,9 @@ function useRoomShellState({ room }: UseRoomShellStateParams): UseRoomShellState
       return null;
     }
 
-    return room.factions.find((faction) => faction.id === currentParticipant.factionId) ?? null;
+    return (
+      room.betting.factions.find((faction) => faction.id === currentParticipant.factionId) ?? null
+    );
   }, [currentParticipant, room]);
 
   const hasSubmittedEvidence = useMemo(() => {

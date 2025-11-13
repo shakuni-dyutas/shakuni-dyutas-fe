@@ -680,8 +680,8 @@ function buildRoomDetailMock(roomId: string, options: BuildRoomDetailMockOptions
   const minBetPoints = options.minBetPoints ?? ROOM_DETAIL_DEFAULTS.minBetPoints;
   const timeLimitMinutes = options.timeLimitMinutes ?? ROOM_DETAIL_DEFAULTS.timeLimitMinutes;
   const teamStats = buildTeamBettingSnapshots(ROOM_DETAIL_PARTICIPANTS, ROOM_DETAIL_FACTIONS);
-  const totalPoolPoints = teamStats.reduce((sum, stat) => sum + stat.totalBetPoints, 0);
   const factionsSnapshots = buildFactionSnapshots(teamStats, ROOM_DETAIL_EVIDENCE_ITEMS);
+  const totalPoolPoints = factionsSnapshots.reduce((sum, stat) => sum + stat.totalBetPoints, 0);
   const evidenceGroups = ROOM_DETAIL_FACTIONS.map((faction) => ({
     factionId: faction.id,
     factionName: faction.name,
@@ -706,13 +706,12 @@ function buildRoomDetailMock(roomId: string, options: BuildRoomDetailMockOptions
     host,
     countdown: {
       endsAt,
-      remainingSeconds: Math.max(timeLimitMinutes * 60 - 5 * 60, 0),
     },
-    factions: factionsSnapshots,
+    factionInfos: ROOM_DETAIL_FACTIONS,
     betting: {
       totalPoolPoints,
       minBetPoints,
-      factions: teamStats,
+      factions: factionsSnapshots,
     },
     participants: ROOM_DETAIL_PARTICIPANTS,
     evidenceGroups,
@@ -757,8 +756,17 @@ function generateMockId(prefix: string) {
 
 function buildRoomMeta(detail: RoomDetail): RoomMeta {
   const cloned = cloneRoomDetail(detail);
-  const { id, title, topic, description, createdAt, timeLimitMinutes, host, countdown, factions } =
-    cloned;
+  const {
+    id,
+    title,
+    topic,
+    description,
+    createdAt,
+    timeLimitMinutes,
+    host,
+    countdown,
+    factionInfos,
+  } = cloned;
 
   return {
     id,
@@ -769,7 +777,7 @@ function buildRoomMeta(detail: RoomDetail): RoomMeta {
     timeLimitMinutes,
     host,
     countdown,
-    factions,
+    factionInfos,
   };
 }
 
@@ -925,6 +933,14 @@ export const roomsHandlers = [
     return HttpResponse.json(buildRoomChat(detail));
   }),
 
+  http.get('*/rooms/:roomId/detail', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+
+    await delay(ROOM_DETAIL_DELAY_MS);
+
+    return HttpResponse.json({ room: cloneRoomDetail(getStoredRoomDetail(roomId)) });
+  }),
+
   http.get('*/rooms/:roomId/events', ({ params }) => {
     const { roomId } = params as { roomId: string };
     let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null;
@@ -1018,7 +1034,9 @@ export const roomsHandlers = [
       );
     }
 
-    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === payload.factionId);
+    const factionSnapshot = roomDetail.betting.factions.find(
+      (faction) => faction.id === payload.factionId,
+    );
     if (!factionSnapshot) {
       return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
     }
@@ -1187,10 +1205,12 @@ export const roomsHandlers = [
     }
 
     const bettingSnapshot = roomDetail.betting.factions.find(
-      (snapshot) => snapshot.factionId === body.factionId,
+      (snapshot) => snapshot.id === body.factionId,
     );
 
-    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === body.factionId);
+    const factionSnapshot = roomDetail.betting.factions.find(
+      (faction) => faction.id === body.factionId,
+    );
 
     if (!bettingSnapshot || !factionSnapshot) {
       return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
@@ -1210,7 +1230,7 @@ export const roomsHandlers = [
       participantForBroadcast = existingParticipant;
 
       if (existingParticipant.factionId !== body.factionId) {
-        const previousFaction = roomDetail.factions.find(
+        const previousFaction = roomDetail.betting.factions.find(
           (faction) => faction.id === existingParticipant.factionId,
         );
 
@@ -1253,13 +1273,11 @@ export const roomsHandlers = [
       type: 'betting-updated',
       data: {
         betting: clonedDetail.betting,
-        factions: clonedDetail.factions,
       },
     });
 
     return HttpResponse.json({
       betting: clonedDetail.betting,
-      factions: clonedDetail.factions,
       participants: clonedDetail.participants,
       message: '배팅이 완료되었어요.',
     });

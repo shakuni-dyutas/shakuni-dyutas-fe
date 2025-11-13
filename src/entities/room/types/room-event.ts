@@ -1,7 +1,7 @@
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { Participant } from '@/entities/participant/types/participant';
-import type { RoomBettingState, RoomMeta } from '@/entities/room/types/room-detail';
+import type { RoomBettingState } from '@/entities/room/types/room-detail';
 
 interface ChatUpdatedEvent {
   type: 'chat-updated';
@@ -30,7 +30,6 @@ interface BettingUpdatedEvent {
   type: 'betting-updated';
   data: {
     betting: RoomBettingState['betting'];
-    factions: RoomMeta['factions'];
   };
 }
 

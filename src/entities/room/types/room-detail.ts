@@ -5,7 +5,6 @@ import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/tea
 
 export interface RoomCountdown {
   endsAt: string;
-  remainingSeconds: number;
 }
 
 export interface RoomFactionSnapshot extends TeamFaction {
@@ -23,7 +22,7 @@ export interface RoomEvidenceGroup {
 export interface RoomBettingSnapshot {
   totalPoolPoints: number;
   minBetPoints: number;
-  factions: TeamBettingSnapshot[];
+  factions: RoomFactionSnapshot[];
 }
 
 export interface RoomMeta {
@@ -35,7 +34,7 @@ export interface RoomMeta {
   timeLimitMinutes: number;
   host: ParticipantProfile;
   countdown: RoomCountdown;
-  factions: RoomFactionSnapshot[];
+  factionInfos: TeamFaction[];
 }
 
 export interface RoomParticipants {

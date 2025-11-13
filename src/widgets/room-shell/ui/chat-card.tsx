@@ -111,7 +111,10 @@ function ChatCard({ room, currentUserId }: ChatCardProps) {
 const DEFAULT_FACTION_COLOR = '#475569';
 
 function findFactionColor(room: RoomDetail, factionId: string) {
-  return room.factions.find((faction) => faction.id === factionId)?.color ?? DEFAULT_FACTION_COLOR;
+  return (
+    room.betting.factions.find((faction) => faction.id === factionId)?.color ??
+    DEFAULT_FACTION_COLOR
+  );
 }
 
 function formatChatTimestamp(timestamp: string) {
@@ -126,7 +129,7 @@ function resolveFactionName(room: RoomDetail, factionId: string) {
     return '진영 없음';
   }
 
-  return room.factions.find((faction) => faction.id === factionId)?.name ?? '진영';
+  return room.betting.factions.find((faction) => faction.id === factionId)?.name ?? '진영';
 }
 
 export { ChatCard };

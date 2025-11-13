@@ -33,7 +33,7 @@ function ParticipantsPanel({ room }: ParticipantsPanelProps) {
 
           <CollapsibleContent className="overflow-hidden transition-[max-height,opacity] duration-200 data-[state=open]:mt-4 data-[state=closed]:max-h-0 data-[state=open]:max-h-[600px] data-[state=closed]:opacity-0 data-[state=open]:opacity-100">
             <div className="flex max-h-[28rem] flex-col gap-4 overflow-y-auto pr-1">
-              {room.factions.map((faction) => {
+              {room.betting.factions.map((faction) => {
                 const members = room.participants.filter(
                   (participant) => participant.factionId === faction.id,
                 );

@@ -10,7 +10,7 @@ async function getRoomDetail(roomId: string): Promise<RoomDetail> {
     throw new Error('roomId는 필수입니다.');
   }
 
-  const response = await apiClient.get(`rooms/${roomId}`).json<GetRoomDetailResponse>();
+  const response = await apiClient.get(`rooms/${roomId}/detail`).json<GetRoomDetailResponse>();
 
   return response.room;
 }

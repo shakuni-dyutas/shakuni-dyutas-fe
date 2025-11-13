@@ -5,6 +5,11 @@ interface RoomSummaryBarProps {
 }
 
 function RoomSummaryBar({ room }: RoomSummaryBarProps) {
+  const remainingSeconds = Math.max(
+    0,
+    Math.floor((new Date(room.countdown.endsAt).getTime() - Date.now()) / 1000),
+  );
+
   return (
     <section className="w-full border-border border-b bg-background/95 shadow-sm">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-5">
@@ -21,7 +26,7 @@ function RoomSummaryBar({ room }: RoomSummaryBarProps) {
           />
           <PlaceholderStat
             label="남은 시간"
-            subLabel={`${Math.floor(room.countdown.remainingSeconds / 60)}분 남음`}
+            subLabel={`${Math.floor(remainingSeconds / 60)}분 남음`}
           />
         </div>
       </div>
