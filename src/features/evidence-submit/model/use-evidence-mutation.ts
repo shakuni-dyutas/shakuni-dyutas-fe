@@ -36,11 +36,7 @@ function useEvidenceMutation({ roomId, onSuccess }: UseEvidenceMutationOptions) 
         authorId: variables.authorId,
         summary: variables.summary,
         body: variables.body,
-        images: variables.images.map((file) => ({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-        })),
+        images: variables.images,
       });
     },
     onSuccess: (response) => {

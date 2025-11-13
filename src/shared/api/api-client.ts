@@ -51,7 +51,6 @@ function configureApiClientAuthentication({
 
 const apiClient = httpClient.extend({
   headers: {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   },
   hooks: {

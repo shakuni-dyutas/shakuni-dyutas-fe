@@ -976,12 +976,20 @@ export const roomsHandlers = [
 
   http.post('*/rooms/:roomId/evidences', async ({ params, request }) => {
     const { roomId } = params as { roomId: string };
-    const body = (await request.json()) as {
-      factionId?: string;
-      authorId?: string;
-      summary?: string;
-      body?: string;
-      images?: { name?: string; size?: number; type?: string }[];
+    const formData = await request.formData();
+
+    const factionIdValue = formData.get('factionId');
+    const authorIdValue = formData.get('authorId');
+    const summaryValue = formData.get('summary');
+    const bodyValue = formData.get('body');
+    const imageEntries = formData.getAll('images');
+
+    const payload = {
+      factionId: typeof factionIdValue === 'string' ? factionIdValue : null,
+      authorId: typeof authorIdValue === 'string' ? authorIdValue : null,
+      summary: typeof summaryValue === 'string' ? summaryValue : null,
+      body: typeof bodyValue === 'string' ? bodyValue : null,
+      images: imageEntries.filter((file): file is File => file instanceof File),
     };
 
     const roomDetail = getStoredRoomDetail(roomId);
@@ -990,21 +998,21 @@ export const roomsHandlers = [
       return HttpResponse.json({ message: '존재하지 않는 방입니다.' }, { status: 404 });
     }
 
-    if (!body.factionId || !body.authorId || !body.summary || !body.body) {
+    if (!payload.factionId || !payload.authorId || !payload.summary || !payload.body) {
       return HttpResponse.json({ message: '필수 값이 누락되었어요.' }, { status: 400 });
     }
 
     const restrictions = roomDetail.restrictions.evidence;
     const maxBytes = restrictions.imageMaxSizeMb * 1024 * 1024;
 
-    if (body.body.length > restrictions.textMaxLength) {
+    if (payload.body.length > restrictions.textMaxLength) {
       return HttpResponse.json(
         { message: `본문은 ${restrictions.textMaxLength}자 이하로 작성해 주세요.` },
         { status: 400 },
       );
     }
 
-    const attachments = body.images ?? [];
+    const attachments = payload.images;
 
     if (attachments.length > restrictions.imageMaxCount) {
       return HttpResponse.json(
@@ -1021,7 +1029,7 @@ export const roomsHandlers = [
     }
 
     const alreadySubmitted = roomDetail.evidenceGroups.some((group) =>
-      group.submissions.some((submission) => submission.author.id === body.authorId),
+      group.submissions.some((submission) => submission.author.id === payload.authorId),
     );
 
     if (alreadySubmitted) {
@@ -1031,13 +1039,13 @@ export const roomsHandlers = [
       );
     }
 
-    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === body.factionId);
+    const factionSnapshot = roomDetail.factions.find((faction) => faction.id === payload.factionId);
     if (!factionSnapshot) {
       return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
     }
 
     const authorProfile =
-      roomDetail.participants.find((participant) => participant.id === body.authorId) ?? null;
+      roomDetail.participants.find((participant) => participant.id === payload.authorId) ?? null;
 
     if (!authorProfile) {
       return HttpResponse.json(
@@ -1046,26 +1054,26 @@ export const roomsHandlers = [
       );
     }
 
-    const evidenceFactionId = body.factionId as TeamFactionId;
+    const evidenceFactionId = payload.factionId as TeamFactionId;
 
     const newEvidence: EvidenceItem = {
       id: generateMockId('evidence'),
       roomId,
       factionId: evidenceFactionId,
       author: authorProfile,
-      summary: body.summary,
-      body: body.body,
+      summary: payload.summary,
+      body: payload.body,
       submittedAt: new Date().toISOString(),
       status: 'submitted',
       media: attachments.map((file, index) => ({
         id: `${roomId}-evidence-media-${index}-${Date.now()}`,
         type: 'image',
         url: `https://placehold.co/600x360/faf5ff/6d28d9.png?text=${encodeURIComponent(
-          `Evidence ${index + 1}`,
+          file.name || `Evidence ${index + 1}`,
         )}`,
-        sizeInBytes: file?.size ?? 0,
+        sizeInBytes: file.size,
         thumbnailUrl: `https://placehold.co/300x200/ede9fe/6d28d9.png?text=${encodeURIComponent(
-          `Evidence ${index + 1}`,
+          file.name || `Evidence ${index + 1}`,
         )}`,
       })),
     };
