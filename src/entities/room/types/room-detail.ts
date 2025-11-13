@@ -1,7 +1,7 @@
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { Participant, ParticipantProfile } from '@/entities/participant/types/participant';
-import type { TeamBettingSnapshot, TeamFaction } from '@/entities/team/types/team-faction';
+import type { TeamFaction } from '@/entities/team/types/team-faction';
 
 export interface RoomCountdown {
   endsAt: string;

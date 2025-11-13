@@ -1,22 +1,18 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { ROOM_CHAT_CONSTRAINTS } from '@/entities/room/config/constants';
-import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
-import { useRoomBetting } from '@/entities/room/model/use-room-betting';
-import { useRoomChat } from '@/entities/room/model/use-room-chat';
 import { useRoomDetailSnapshot } from '@/entities/room/model/use-room-detail-snapshot';
 import { useRoomEvents } from '@/entities/room/model/use-room-events';
-import { useRoomEvidence } from '@/entities/room/model/use-room-evidence';
-import { useRoomMeta } from '@/entities/room/model/use-room-meta';
-import { useRoomParticipants } from '@/entities/room/model/use-room-participants';
-import type { RoomDetail } from '@/entities/room/types/room-detail';
 import { openBetModal } from '@/features/bet-place/ui/bet-modal';
 import { openEvidenceModal } from '@/features/evidence-submit/ui/evidence-modal';
 import { Button } from '@/shared/ui/button';
-import { useRoomShellState } from '@/widgets/room-shell/model/use-room-shell-state';
+import { useRoomBettingState } from '@/widgets/room-shell/model/use-room-betting-state';
+import { useRoomChatState } from '@/widgets/room-shell/model/use-room-chat-state';
+import { useRoomEvidenceState } from '@/widgets/room-shell/model/use-room-evidence-state';
+import { useRoomMetaState } from '@/widgets/room-shell/model/use-room-meta-state';
+import { useRoomParticipantsState } from '@/widgets/room-shell/model/use-room-participants-state';
 import { ChatCard } from '@/widgets/room-shell/ui/chat-card';
 import { EvidenceSection } from '@/widgets/room-shell/ui/evidence-section';
 import { ParticipantsPanel } from '@/widgets/room-shell/ui/participants-panel';
@@ -29,70 +25,42 @@ interface RoomShellProps {
 }
 
 function RoomShell({ roomId }: RoomShellProps) {
-  const queryClient = useQueryClient();
-  useRoomDetailSnapshot(roomId);
-  const metaQuery = useRoomMeta(roomId);
-  const participantsQuery = useRoomParticipants(roomId);
-  const bettingQuery = useRoomBetting(roomId);
-  const evidenceQuery = useRoomEvidence(roomId);
-  const chatQuery = useRoomChat(roomId);
+  const detailQuery = useRoomDetailSnapshot(roomId);
   useRoomEvents(roomId);
 
-  const queries = [metaQuery, participantsQuery, bettingQuery, evidenceQuery, chatQuery] as const;
-
-  const room = useMemo<RoomDetail | null>(() => {
-    if (
-      !metaQuery.data ||
-      !participantsQuery.data ||
-      !bettingQuery.data ||
-      !evidenceQuery.data ||
-      !chatQuery.data
-    ) {
-      return null;
-    }
-
-    return {
-      ...metaQuery.data,
-      ...participantsQuery.data,
-      ...bettingQuery.data,
-      ...evidenceQuery.data,
-      ...chatQuery.data,
-    };
-  }, [
-    bettingQuery.data,
-    chatQuery.data,
-    evidenceQuery.data,
-    metaQuery.data,
-    participantsQuery.data,
-  ]);
+  const room = detailQuery.data ?? null;
 
   const isInitialLoading =
-    !room && queries.some((query) => query.isLoading || query.isPending || query.isFetching);
-  const blockingError = !room ? queries.find((query) => query.isError)?.error : null;
-  const errorMessage =
-    blockingError instanceof Error
-      ? blockingError.message
-      : blockingError
-        ? '알 수 없는 오류가 발생했습니다.'
-        : null;
+    !room && (detailQuery.isLoading || detailQuery.isPending || detailQuery.isFetching);
 
-  const handleRetry = () => {
-    queries.forEach((query) => {
-      query.refetch();
+  const { meta, factionColorMap } = useRoomMetaState(room);
+  const { participants, currentUserId, currentParticipant } = useRoomParticipantsState(room);
+  const { betting, currentFaction, hasPlacedBet, handleBetPlaced, applyBettingSnapshot } =
+    useRoomBettingState({
+      room,
+      factionColorMap,
+      currentParticipant,
     });
-  };
-
-  const {
-    roomData,
-    currentUserId,
-    currentFaction,
-    hasSubmittedEvidence,
-    isEvidenceDisabled,
-    hasPlacedBet,
-    handleBetPlaced,
-    handleEvidenceSubmit,
-    handleChatSubmit,
-  } = useRoomShellState({ room });
+  const { evidenceGroups, hasSubmittedEvidence, isEvidenceDisabled, handleEvidenceSubmit } =
+    useRoomEvidenceState({
+      room,
+      currentParticipant,
+      currentFactionId: currentFaction?.id ?? null,
+      currentUserId,
+    });
+  const { chatMessages, handleChatSubmit } = useRoomChatState({ room, currentParticipant });
+  const roomData = useMemo(() => {
+    if (!meta || !participants || !betting || !evidenceGroups || !chatMessages) {
+      return null;
+    }
+    return {
+      ...meta,
+      participants,
+      betting,
+      evidenceGroups,
+      chatMessages,
+    };
+  }, [betting, chatMessages, evidenceGroups, meta, participants]);
 
   if (isInitialLoading && !roomData) {
     return <RoomShellSkeleton />;
@@ -104,32 +72,30 @@ function RoomShell({ roomId }: RoomShellProps) {
         <div className="space-y-2">
           <p className="font-semibold text-xl">방 정보를 불러오지 못했어요.</p>
           <p className="text-muted-foreground text-sm">
-            {errorMessage ?? '잠시 후 다시 시도하거나 홈으로 이동해 주세요.'}
+            잠시 후 다시 시도하거나 홈으로 이동해 주세요.
           </p>
         </div>
-        <Button onClick={handleRetry}>다시 시도</Button>
+        <Button onClick={() => void detailQuery.refetch()}>다시 시도</Button>
       </div>
     );
   }
 
   const handleOpenBetModal = () => {
+    if (!betting) {
+      return;
+    }
+
     openBetModal({
       roomId: roomData.id,
       roomTitle: roomData.title,
-      factions: roomData.betting.factions,
-      betting: roomData.betting,
+      factions: betting.factions,
+      betting,
       onSuccess: (response) => {
         handleBetPlaced();
-        if (response.participants) {
-          queryClient.setQueryData(ROOM_QUERY_KEYS.participants(roomId), {
-            participants: response.participants,
-          });
-        }
-        void Promise.all([
-          queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.betting(roomId) }),
-          queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.meta(roomId) }),
-          queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.participants(roomId) }),
-        ]);
+        applyBettingSnapshot({
+          betting: response.betting,
+          participants: response.participants,
+        });
       },
     }).catch(() => {});
   };

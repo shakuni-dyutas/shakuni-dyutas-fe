@@ -15,7 +15,7 @@ import type {
 function cacheRoomSnapshot(roomId: string, snapshot: RoomDetail, queryClient: QueryClient) {
   const { participants, betting, evidenceGroups, chatMessages, ...meta } = snapshot;
 
-  queryClient.setQueryData(ROOM_QUERY_KEYS.meta(roomId), meta as RoomMeta);
+  queryClient.setQueryData(ROOM_QUERY_KEYS.meta(roomId), { ...meta } as RoomMeta);
   queryClient.setQueryData(ROOM_QUERY_KEYS.participants(roomId), {
     participants,
   } as RoomParticipants);
@@ -34,7 +34,7 @@ function useRoomDetailSnapshot(roomId: string | null) {
   const queryClient = useQueryClient();
   const detailKey = ROOM_QUERY_KEYS.detail(roomId ?? 'initial');
 
-  const { data } = useQuery<RoomDetail>({
+  const query = useQuery<RoomDetail>({
     queryKey: detailKey,
     queryFn: () => {
       if (!roomId) {
@@ -46,11 +46,13 @@ function useRoomDetailSnapshot(roomId: string | null) {
   });
 
   useEffect(() => {
-    if (!roomId || !data) {
+    if (!roomId || !query.data) {
       return;
     }
-    cacheRoomSnapshot(roomId, data, queryClient);
-  }, [data, queryClient, roomId]);
+    cacheRoomSnapshot(roomId, query.data, queryClient);
+  }, [query.data, queryClient, roomId]);
+
+  return query;
 }
 
 export { useRoomDetailSnapshot };

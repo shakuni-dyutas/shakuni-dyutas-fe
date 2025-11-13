@@ -4,7 +4,7 @@ export interface TeamFaction {
   id: TeamFactionId;
   name: string;
   description?: string;
-  color: string; // HEX
+  color?: string; // HEX
 }
 
 export interface TeamBettingSnapshot {

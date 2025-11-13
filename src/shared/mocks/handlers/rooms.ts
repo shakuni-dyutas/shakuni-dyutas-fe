@@ -2,11 +2,7 @@ import { delay, HttpResponse, http } from 'msw';
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { Participant, ParticipantProfile } from '@/entities/participant/types/participant';
-import {
-  getRoomFactionColor,
-  ROOM_CHAT_CONSTRAINTS,
-  ROOM_EVIDENCE_CONSTRAINTS,
-} from '@/entities/room/config/constants';
+import { ROOM_CHAT_CONSTRAINTS, ROOM_EVIDENCE_CONSTRAINTS } from '@/entities/room/config/constants';
 import type { Room } from '@/entities/room/types/room';
 import type {
   RoomBettingState,
@@ -100,13 +96,11 @@ const ROOM_DETAIL_FACTIONS: TeamFaction[] = [
     id: 'faction-alpha',
     name: '규제 필요 진영',
     description: 'AI 오남용을 예방하기 위해 법적 규제가 필수라고 주장합니다.',
-    color: getRoomFactionColor(0),
   },
   {
     id: 'faction-beta',
     name: '규제 불필요 진영',
     description: '혁신 속도를 위해 자율 규제만으로 충분하다고 주장합니다.',
-    color: getRoomFactionColor(1),
   },
 ];
 

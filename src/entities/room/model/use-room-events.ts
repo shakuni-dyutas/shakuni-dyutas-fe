@@ -8,6 +8,7 @@ import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import type {
   RoomBettingState,
   RoomChatState,
+  RoomDetail,
   RoomEvidenceState,
   RoomParticipants,
 } from '@/entities/room/types/room-detail';
@@ -44,6 +45,13 @@ function useRoomEvents(roomId: string | null) {
       return;
     }
 
+    const syncDetail = (updater: (detail: RoomDetail) => RoomDetail) => {
+      queryClient.setQueryData(
+        ROOM_QUERY_KEYS.detail(roomId),
+        (previous: RoomDetail | undefined) => (previous ? updater(previous) : previous),
+      );
+    };
+
     const handleChat = (event: MessageEvent<string>) => {
       const payload = parseJson<{ message: ChatMessage }>(event.data);
       if (!payload) {
@@ -61,6 +69,13 @@ function useRoomEvents(roomId: string | null) {
           return { chatMessages: nextMessages } satisfies RoomChatState;
         },
       );
+      syncDetail((detail) => ({
+        ...detail,
+        chatMessages: [
+          payload.message,
+          ...detail.chatMessages.filter((message) => message.id !== payload.message.id),
+        ],
+      }));
     };
 
     const handleEvidence = (event: MessageEvent<string>) => {
@@ -108,6 +123,39 @@ function useRoomEvents(roomId: string | null) {
           } satisfies RoomEvidenceState;
         },
       );
+      syncDetail((detail) => {
+        const groups = detail.evidenceGroups ?? [];
+        const groupIndex = groups.findIndex((group) => group.factionId === factionId);
+        if (groupIndex >= 0) {
+          const nextGroups = groups.map((group, index) =>
+            index === groupIndex
+              ? {
+                  ...group,
+                  submissions: [
+                    payload.submission,
+                    ...group.submissions.filter((item) => item.id !== payload.submission.id),
+                  ],
+                }
+              : group,
+          );
+          return {
+            ...detail,
+            evidenceGroups: nextGroups,
+          };
+        }
+
+        return {
+          ...detail,
+          evidenceGroups: [
+            {
+              factionId,
+              factionName: payload.factionName,
+              submissions: [payload.submission],
+            },
+            ...groups,
+          ],
+        };
+      });
     };
 
     const handleParticipant = (event: MessageEvent<string>) => {
@@ -128,6 +176,13 @@ function useRoomEvents(roomId: string | null) {
           return { participants: nextParticipants } satisfies RoomParticipants;
         },
       );
+      syncDetail((detail) => ({
+        ...detail,
+        participants: [
+          payload.participant,
+          ...detail.participants.filter((participant) => participant.id !== payload.participant.id),
+        ],
+      }));
     };
 
     const handleBetting = (event: MessageEvent<string>) => {
@@ -143,6 +198,10 @@ function useRoomEvents(roomId: string | null) {
         ROOM_QUERY_KEYS.betting(roomId),
         (): RoomBettingState => ({ betting: payload.betting }),
       );
+      syncDetail((detail) => ({
+        ...detail,
+        betting: payload.betting,
+      }));
     };
 
     eventSource.addEventListener('chat-updated', handleChat);
