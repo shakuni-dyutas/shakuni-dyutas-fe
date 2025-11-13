@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import { useRoomBetting } from '@/entities/room/model/use-room-betting';
 import { useRoomChat } from '@/entities/room/model/use-room-chat';
+import { useRoomEvents } from '@/entities/room/model/use-room-events';
 import { useRoomEvidence } from '@/entities/room/model/use-room-evidence';
 import { useRoomMeta } from '@/entities/room/model/use-room-meta';
 import { useRoomParticipants } from '@/entities/room/model/use-room-participants';
@@ -32,6 +33,7 @@ function RoomShell({ roomId }: RoomShellProps) {
   const bettingQuery = useRoomBetting(roomId);
   const evidenceQuery = useRoomEvidence(roomId);
   const chatQuery = useRoomChat(roomId);
+  useRoomEvents(roomId);
 
   const queries = [metaQuery, participantsQuery, bettingQuery, evidenceQuery, chatQuery] as const;
 

@@ -25,6 +25,9 @@ import type {
 } from '@/entities/team/types/team-faction';
 import { MOCK_USER } from './constants';
 
+const textEncoder = new TextEncoder();
+const roomEventStreams = new Map<string, Set<ReadableStreamDefaultController<Uint8Array>>>();
+
 const ROOM_CREATE_ENDPOINT = '*/rooms';
 const ROOM_CREATION_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 1000;
 const ROOM_DETAIL_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 400;
@@ -742,6 +745,18 @@ function cloneRoomDetail(detail: RoomDetail): RoomDetail {
   return JSON.parse(JSON.stringify(detail)) as RoomDetail;
 }
 
+function cloneChatMessage(message: ChatMessage): ChatMessage {
+  return JSON.parse(JSON.stringify(message)) as ChatMessage;
+}
+
+function cloneEvidenceItem(evidence: EvidenceItem): EvidenceItem {
+  return JSON.parse(JSON.stringify(evidence)) as EvidenceItem;
+}
+
+function cloneParticipant(participant: Participant): Participant {
+  return JSON.parse(JSON.stringify(participant)) as Participant;
+}
+
 function generateMockId(prefix: string) {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -931,6 +946,34 @@ export const roomsHandlers = [
     return HttpResponse.json(buildRoomChat(detail));
   }),
 
+  http.get('*/rooms/:roomId/events', ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null;
+
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controllerRef = controller;
+        const subscribers = getRoomEventSubscribers(roomId);
+        subscribers.add(controller);
+        controller.enqueue(textEncoder.encode(': connected\n\n'));
+      },
+      cancel() {
+        if (controllerRef) {
+          const subscribers = roomEventStreams.get(roomId);
+          subscribers?.delete(controllerRef);
+        }
+      },
+    });
+
+    return new HttpResponse(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        Connection: 'keep-alive',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  }),
+
   http.post('*/rooms/:roomId/evidences', async ({ params, request }) => {
     const { roomId } = params as { roomId: string };
     const body = (await request.json()) as {
@@ -1043,6 +1086,15 @@ export const roomsHandlers = [
 
     factionSnapshot.evidenceCount += 1;
 
+    broadcastRoomEvent(roomId, {
+      type: 'evidence-submitted',
+      data: {
+        submission: cloneEvidenceItem(newEvidence),
+        factionId: evidenceFactionId,
+        factionName: factionSnapshot.name,
+      },
+    });
+
     return HttpResponse.json({
       evidenceGroups: cloneRoomDetail(roomDetail).evidenceGroups,
       message: '증거 제출이 완료되었어요.',
@@ -1117,6 +1169,13 @@ export const roomsHandlers = [
 
     roomDetail.chatMessages = [newMessage, ...roomDetail.chatMessages];
 
+    broadcastRoomEvent(roomId, {
+      type: 'chat-created',
+      data: {
+        message: cloneChatMessage(newMessage),
+      },
+    });
+
     return HttpResponse.json({
       message: newMessage,
     });
@@ -1166,7 +1225,11 @@ export const roomsHandlers = [
       (participant) => participant.id === MOCK_USER.id,
     );
 
+    let participantForBroadcast: Participant;
+
     if (existingParticipant) {
+      participantForBroadcast = existingParticipant;
+
       if (existingParticipant.factionId !== body.factionId) {
         const previousFaction = roomDetail.factions.find(
           (faction) => faction.id === existingParticipant.factionId,
@@ -1197,7 +1260,15 @@ export const roomsHandlers = [
         },
       ];
       factionSnapshot.memberCount += 1;
+      participantForBroadcast = roomDetail.participants[roomDetail.participants.length - 1];
     }
+
+    broadcastRoomEvent(roomId, {
+      type: 'participant-updated',
+      data: {
+        participant: cloneParticipant(participantForBroadcast),
+      },
+    });
 
     return HttpResponse.json({
       betting: cloneRoomDetail(roomDetail).betting,
@@ -1207,3 +1278,30 @@ export const roomsHandlers = [
     });
   }),
 ];
+
+function getRoomEventSubscribers(roomId: string) {
+  let subscribers = roomEventStreams.get(roomId);
+  if (!subscribers) {
+    subscribers = new Set();
+    roomEventStreams.set(roomId, subscribers);
+  }
+  return subscribers;
+}
+
+function broadcastRoomEvent(roomId: string, event: { type: string; data?: unknown }) {
+  const subscribers = roomEventStreams.get(roomId);
+  if (!subscribers || subscribers.size === 0) {
+    return;
+  }
+
+  const payload = `event: ${event.type}\ndata: ${JSON.stringify(event.data ?? {})}\n\n`;
+  const chunk = textEncoder.encode(payload);
+
+  subscribers.forEach((controller) => {
+    try {
+      controller.enqueue(chunk);
+    } catch (_error) {
+      subscribers.delete(controller);
+    }
+  });
+}

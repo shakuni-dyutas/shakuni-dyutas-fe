@@ -27,6 +27,18 @@ const authenticationHandlers: AuthenticationHandlers = {
   clearSession: null,
 };
 
+function getCurrentAccessToken() {
+  if (!authenticationHandlers.getAccessToken) {
+    return null;
+  }
+
+  try {
+    return authenticationHandlers.getAccessToken() ?? null;
+  } catch (_error) {
+    return null;
+  }
+}
+
 function configureApiClientAuthentication({
   getAccessToken,
   refreshAccessToken,
@@ -110,4 +122,4 @@ const apiClient = httpClient.extend({
   } satisfies Hooks,
 });
 
-export { apiClient, configureApiClientAuthentication };
+export { apiClient, configureApiClientAuthentication, getCurrentAccessToken };

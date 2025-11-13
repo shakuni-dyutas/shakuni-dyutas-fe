@@ -230,15 +230,13 @@ function generateTempId() {
   return Math.random().toString(36).slice(2);
 }
 
+function replaceChatMessage(messages: ChatMessage[], targetId: string, nextMessage: ChatMessage) {
+  const filtered = messages.filter(
+    (message) => message.id !== targetId && message.id !== nextMessage.id,
+  );
+
+  return [nextMessage, ...filtered];
+}
+
 export type { UseRoomShellStateParams, UseRoomShellStateResult };
 export { useRoomShellState };
-
-function replaceChatMessage(messages: ChatMessage[], targetId: string, nextMessage: ChatMessage) {
-  const hasTarget = messages.some((message) => message.id === targetId);
-
-  if (!hasTarget) {
-    return [nextMessage, ...messages];
-  }
-
-  return messages.map((message) => (message.id === targetId ? nextMessage : message));
-}
