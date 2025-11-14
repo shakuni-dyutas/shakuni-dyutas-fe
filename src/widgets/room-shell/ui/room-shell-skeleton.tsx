@@ -55,10 +55,22 @@ function RoomShellSkeleton() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 border-border border-t bg-background/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
-        <div className="mx-auto flex w-full max-w-5xl gap-3">
-          <div className="h-12 flex-1 animate-pulse rounded-full bg-muted" />
-          <div className="h-12 w-28 animate-pulse rounded-full bg-muted" />
+      <div className="fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
+        <div className="mx-auto w-full max-w-5xl border-border border-t bg-background/95 px-4 pt-3 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="flex w-full flex-col gap-3">
+            <div className="flex gap-3">
+              <div className="h-14 flex-1 animate-pulse rounded-full bg-muted" />
+              <div className="h-14 flex-1 animate-pulse rounded-full bg-muted" />
+            </div>
+            <div className="flex gap-3">
+              <div className="h-14 flex-1 animate-pulse rounded-full bg-muted" />
+              <div className="h-14 w-14 animate-pulse rounded-full bg-muted" />
+            </div>
+            <div className="flex items-center justify-between px-1 text-xs">
+              <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
