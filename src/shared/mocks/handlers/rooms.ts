@@ -932,7 +932,7 @@ export const roomsHandlers = [
 
     await delay(ROOM_DETAIL_DELAY_MS);
 
-    return HttpResponse.json({ room: cloneRoomDetail(getStoredRoomDetail(roomId)) });
+    return HttpResponse.json(cloneRoomDetail(getStoredRoomDetail(roomId)));
   }),
 
   http.get('*/rooms/:roomId/events', ({ params }) => {
