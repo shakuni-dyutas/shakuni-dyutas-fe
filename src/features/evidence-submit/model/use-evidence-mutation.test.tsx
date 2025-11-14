@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
-import { HTTPError } from 'ky';
+import { HTTPError, type NormalizedOptions } from 'ky';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { PostRoomEvidenceResponse } from '@/features/evidence-submit/api/post-room-evidence';
@@ -71,7 +71,7 @@ describe('useEvidenceMutation', () => {
     const httpError = new HTTPError(
       new Response(JSON.stringify({ message: '제한 위반' }), { status: 400 }),
       new Request('https://example.com/rooms/room-1/evidences'),
-      { method: 'POST' },
+      { method: 'POST' } as NormalizedOptions,
     );
     postRoomEvidenceMock.mockRejectedValueOnce(httpError);
     resolveHttpErrorMessageMock.mockResolvedValueOnce('제출 제한');
