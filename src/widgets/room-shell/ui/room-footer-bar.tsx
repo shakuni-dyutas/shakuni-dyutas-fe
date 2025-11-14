@@ -8,7 +8,7 @@ import { useChatInput } from '@/widgets/room-shell/model/use-chat-input';
 import { RoomActionButtons } from '@/widgets/room-shell/ui/room-action-buttons';
 
 interface RoomFooterBarProps {
-  onSubmit?: (value: string) => void;
+  onSubmit?: (value: string) => Promise<void> | void;
   onBetClick?: () => void;
   onEvidenceClick?: () => void;
   isEvidenceDisabled?: boolean;

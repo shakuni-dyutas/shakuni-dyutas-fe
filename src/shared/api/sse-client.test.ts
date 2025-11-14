@@ -69,13 +69,13 @@ describe('createEventSource', () => {
     connection?.close();
   });
 
-  it('MSW SSE 스트림에서 evidence-submitted와 participant-updated 이벤트를 수신한다', async () => {
+  it('MSW SSE 스트림에서 evidence-updated와 participant-updated 이벤트를 수신한다', async () => {
     const roomId = 'room-sse-evidence-test';
     const connection = createEventSource(`rooms/${roomId}/events`);
     expect(connection).not.toBeNull();
 
     const evidenceReceived = new Promise<{ submissionId: string }>((resolve) => {
-      connection?.addEventListener('evidence-submitted', (event) => {
+      connection?.addEventListener('evidence-updated', (event) => {
         const payload = JSON.parse(event.data ?? '{}') as {
           submission?: { id: string };
         };

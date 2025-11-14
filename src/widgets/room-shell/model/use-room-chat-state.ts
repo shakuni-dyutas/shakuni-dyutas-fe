@@ -22,7 +22,7 @@ interface UseRoomChatStateParams {
 
 interface UseRoomChatStateResult {
   chatMessages: RoomDetail['chatMessages'];
-  handleChatSubmit: (message: string) => void;
+  handleChatSubmit: (message: string) => Promise<void>;
 }
 
 function useRoomChatState({

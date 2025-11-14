@@ -1086,7 +1086,7 @@ export const roomsHandlers = [
     factionSnapshot.evidenceCount += 1;
 
     broadcastRoomEvent(roomId, {
-      type: 'evidence-submitted',
+      type: 'evidence-updated',
       data: {
         submission: cloneEvidenceItem(newEvidence),
         factionId: evidenceFactionId,
@@ -1198,21 +1198,16 @@ export const roomsHandlers = [
       return HttpResponse.json({ message: '최소 배팅 포인트보다 적습니다.' }, { status: 400 });
     }
 
-    const bettingSnapshot = roomDetail.betting.factions.find(
-      (snapshot) => snapshot.id === body.factionId,
-    );
-
     const factionSnapshot = roomDetail.betting.factions.find(
       (faction) => faction.id === body.factionId,
     );
 
-    if (!bettingSnapshot || !factionSnapshot) {
+    if (!factionSnapshot) {
       return HttpResponse.json({ message: '존재하지 않는 진영입니다.' }, { status: 404 });
     }
 
-    bettingSnapshot.totalBetPoints += body.points;
-    roomDetail.betting.totalPoolPoints += body.points;
     factionSnapshot.totalBetPoints += body.points;
+    roomDetail.betting.totalPoolPoints += body.points;
 
     const existingParticipant = roomDetail.participants.find(
       (participant) => participant.id === MOCK_USER.id,
