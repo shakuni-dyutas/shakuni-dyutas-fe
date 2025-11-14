@@ -1144,9 +1144,11 @@ export const roomsHandlers = [
       : {
           id: body.authorId,
           nickname:
-            body.authorId === MOCK_USER.id ? (MOCK_USER.nickname ?? MOCK_USER.name) : '익명',
+            body.authorId === MOCK_USER.userId ? (MOCK_USER.username ?? 'Mock User') : '익명',
           avatarUrl:
-            body.authorId === MOCK_USER.id ? (MOCK_USER.avatarUrl ?? undefined) : undefined,
+            body.authorId === MOCK_USER.userId
+              ? (MOCK_USER.profileImageURL ?? undefined)
+              : undefined,
         };
 
     const factionId = (body.factionId ??
@@ -1210,7 +1212,7 @@ export const roomsHandlers = [
     roomDetail.betting.totalPoolPoints += body.points;
 
     const existingParticipant = roomDetail.participants.find(
-      (participant) => participant.id === MOCK_USER.id,
+      (participant) => participant.id === MOCK_USER.userId,
     );
 
     let participantForBroadcast: Participant;
@@ -1236,9 +1238,9 @@ export const roomsHandlers = [
       roomDetail.participants = [
         ...roomDetail.participants,
         {
-          id: MOCK_USER.id,
-          nickname: MOCK_USER.nickname ?? MOCK_USER.name ?? 'Mock User',
-          avatarUrl: MOCK_USER.avatarUrl ?? undefined,
+          id: MOCK_USER.userId,
+          nickname: MOCK_USER.username ?? 'Mock User',
+          avatarUrl: MOCK_USER.profileImageURL ?? undefined,
           factionId: body.factionId as TeamFactionId,
           role: 'member',
           joinedAt: new Date().toISOString(),

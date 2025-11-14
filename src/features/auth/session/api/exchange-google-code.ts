@@ -1,46 +1,16 @@
 import type { SessionSnapshot, SessionUser } from '@/entities/session/model/session-store';
 import { apiClient } from '@/shared/api/api-client';
 
+import type { AuthUserResponse } from './types';
+
 type ExchangeGoogleCodeParams = {
   code: string;
 };
 
-type GoogleSignInResponseUser =
-  | {
-      user_id: string;
-      email: string;
-      nickname: string;
-      profileImageUrl: string | null;
-    }
-  | {
-      id: string;
-      email: string;
-      name: string;
-      avatarUrl?: string | null;
-    };
-
 type GoogleSignInResponseDto = {
   accessToken: string;
-  user: GoogleSignInResponseUser;
+  user: AuthUserResponse;
 };
-
-function mapUserResponse(user: GoogleSignInResponseUser): SessionUser {
-  if ('user_id' in user) {
-    return {
-      id: user.user_id,
-      email: user.email,
-      nickname: user.nickname,
-      profileImageUrl: user.profileImageUrl ?? null,
-    };
-  }
-
-  return {
-    id: user.id,
-    email: user.email,
-    nickname: user.name,
-    profileImageUrl: user.avatarUrl ?? null,
-  };
-}
 
 async function exchangeGoogleAuthorizationCode({
   code,
@@ -55,7 +25,12 @@ async function exchangeGoogleAuthorizationCode({
 
   return {
     accessToken: response.accessToken,
-    user: mapUserResponse(response.user),
+    user: {
+      id: response.user.userId,
+      email: response.user.email,
+      nickname: response.user.username ?? response.user.email,
+      profileImageUrl: response.user.profileImageURL ?? null,
+    },
   };
 }
 

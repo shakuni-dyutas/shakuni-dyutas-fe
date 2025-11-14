@@ -3,15 +3,20 @@ export const MOCK_REFRESHED_ACCESS_TOKEN = 'mock-access-token-refreshed';
 export const MOCK_REFRESH_TOKEN = 'mock-refresh-token';
 export const MOCK_REFRESH_TOKEN_ROTATED = 'mock-refresh-token-rotated';
 export const MOCK_USER = {
-  id: 'mock-user-id',
-  user_id: 'mock-user-id',
+  userId: 'mock-user-id',
   email: 'player@dyutas.app',
-  name: 'Dyutas Player',
-  nickname: 'Dyutas Player',
-  avatarUrl: null,
-  profileImageUrl: null,
+  username: 'Dyutas Player',
+  profileImageURL: null,
 };
-export const MOCK_USER_ID = MOCK_USER.id;
+
+export const MOCK_SESSION_USER = {
+  id: MOCK_USER.userId,
+  email: MOCK_USER.email,
+  nickname: MOCK_USER.username ?? 'Dyutas Player',
+  profileImageUrl: MOCK_USER.profileImageURL,
+};
+
+export const MOCK_USER_ID = MOCK_USER.userId;
 
 export const GOOGLE_AUTH_CODES = {
   EXISTING_USER: 'existing-user-code',
