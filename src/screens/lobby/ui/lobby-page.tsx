@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import type { RoomFilters } from '@/entities/room/types/room';
@@ -7,6 +8,7 @@ import { LobbyTabs } from '@/widgets/lobby/ui/lobby-tabs';
 import { RoomList } from '@/widgets/lobby/ui/room-list';
 
 function LobbyPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<NonNullable<RoomFilters['view']>>('active');
   const filters: RoomFilters = { view: tab, sort: tab === 'hot' ? 'betting' : 'latest' };
   const mockRooms = [
@@ -97,7 +99,11 @@ function LobbyPage() {
       <section className="px-4 py-4">
         <LobbyTabs value={tab} onValueChange={setTab} />
         <div className="mt-4">
-          <RoomList filters={filters} rooms={filteredRooms} />
+          <RoomList
+            filters={filters}
+            rooms={filteredRooms}
+            onEnterRoom={(roomId) => router.push(`/rooms/${roomId}`)}
+          />
         </div>
       </section>
       <CreateRoomCTA />
