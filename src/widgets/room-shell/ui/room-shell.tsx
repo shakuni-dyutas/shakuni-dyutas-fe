@@ -35,17 +35,15 @@ function RoomShell({ roomId }: RoomShellProps) {
 
   const { meta, factionColorMap } = useRoomMetaState(room);
   const { participants, currentUserId, currentParticipant } = useRoomParticipantsState(room);
-  const { betting, currentFaction, hasPlacedBet, handleBetPlaced, applyBettingSnapshot } =
-    useRoomBettingState({
-      room,
-      factionColorMap,
-      currentParticipant,
-    });
+  const { betting, currentFaction, hasPlacedBet, applyBettingSnapshot } = useRoomBettingState({
+    room,
+    factionColorMap,
+    currentParticipant,
+  });
   const { evidenceGroups, hasSubmittedEvidence, isEvidenceDisabled, handleEvidenceSubmit } =
     useRoomEvidenceState({
       room,
       currentParticipant,
-      currentFactionId: currentFaction?.id ?? null,
       currentUserId,
     });
   const { chatMessages, handleChatSubmit } = useRoomChatState({ room, currentParticipant });
@@ -91,7 +89,6 @@ function RoomShell({ roomId }: RoomShellProps) {
       factions: betting.factions,
       betting,
       onSuccess: (response) => {
-        handleBetPlaced();
         applyBettingSnapshot({
           betting: response.betting,
           participants: response.participants,

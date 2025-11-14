@@ -1,14 +1,19 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { HTTPError } from 'ky';
 import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { Participant, ParticipantProfile } from '@/entities/participant/types/participant';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
-import type { RoomChatState, RoomDetail } from '@/entities/room/types/room-detail';
+import type { RoomDetail } from '@/entities/room/types/room-detail';
 import type { SessionUser } from '@/entities/session/model/session-store';
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { TEAM_FACTION_NONE_ID } from '@/entities/team/config/constants';
-import { useChatMutation } from '@/features/chat-send/model/use-chat-mutation';
+import { postRoomChat } from '@/features/chat-send/api/post-room-chat';
+import type { ChatMutationVariables } from '@/features/chat-send/model/use-chat-mutation';
+import { resolveHttpErrorMessage } from '@/shared/lib/http/resolve-http-error-message';
+import { logDebug } from '@/shared/lib/logger';
 
 interface UseRoomChatStateParams {
   room: RoomDetail | null;
@@ -29,19 +34,23 @@ function useRoomChatState({
   const roomId = room?.id ?? null;
   const chatMessages = useMemo(() => room?.chatMessages ?? [], [room?.chatMessages]);
 
-  const applyChatUpdate = useCallback(
-    (updater: (messages: ChatMessage[]) => ChatMessage[]) => {
+  const chatMutation = useMutation<
+    Awaited<ReturnType<typeof postRoomChat>>,
+    unknown,
+    ChatMutationVariables & { optimistic: ChatMessage },
+    { previousDetail?: RoomDetail; optimisticId?: string }
+  >({
+    mutationFn: async (variables) => {
+      const { optimistic: _optimistic, ...rest } = variables;
+      return postRoomChat(rest);
+    },
+    onMutate: async (variables) => {
       if (!roomId) {
         return;
       }
 
-      queryClient.setQueryData(
-        ROOM_QUERY_KEYS.chat(roomId),
-        (previousState: RoomChatState | undefined): RoomChatState => {
-          const currentMessages = previousState?.chatMessages ?? [];
-          return { chatMessages: updater(currentMessages) };
-        },
-      );
+      await queryClient.cancelQueries({ queryKey: ROOM_QUERY_KEYS.detail(roomId) });
+      const previousDetail = queryClient.getQueryData<RoomDetail>(ROOM_QUERY_KEYS.detail(roomId));
 
       queryClient.setQueryData(
         ROOM_QUERY_KEYS.detail(roomId),
@@ -51,15 +60,71 @@ function useRoomChatState({
           }
           return {
             ...previous,
-            chatMessages: updater(previous.chatMessages ?? []),
+            chatMessages: [
+              variables.optimistic,
+              ...previous.chatMessages.filter((message) => message.id !== variables.optimistic.id),
+            ],
+          };
+        },
+      );
+
+      return { previousDetail, optimisticId: variables.optimistic.id };
+    },
+    onError: async (error, _variables, context) => {
+      if (!roomId || !context?.previousDetail) {
+        // no optimistic update applied
+      } else {
+        queryClient.setQueryData(ROOM_QUERY_KEYS.detail(roomId), context.previousDetail);
+      }
+
+      if (error instanceof HTTPError) {
+        const resolved = await resolveHttpErrorMessage(error, {
+          namespace: 'ChatSend',
+          parseErrorLogMessage: '채팅 전송 오류 응답 파싱 실패',
+        });
+        toast.error(resolved ?? '메시지 전송에 실패했어요. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+
+      logDebug('ChatSend', '예기치 못한 오류로 채팅 전송에 실패했어요.', error);
+      toast.error('메시지 전송에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    },
+    onSuccess: (response, variables, context) => {
+      if (!roomId) {
+        return;
+      }
+
+      if (response.notice) {
+        toast.success(response.notice);
+      }
+
+      queryClient.setQueryData(
+        ROOM_QUERY_KEYS.detail(roomId),
+        (previous: RoomDetail | undefined) => {
+          if (!previous) {
+            return previous;
+          }
+
+          return {
+            ...previous,
+            chatMessages: [
+              response.message,
+              ...previous.chatMessages.filter(
+                (message) =>
+                  message.id !== response.message.id && message.id !== context?.optimisticId,
+              ),
+            ],
           };
         },
       );
     },
-    [queryClient, roomId],
-  );
-
-  const { submitChat } = useChatMutation();
+    onSettled: () => {
+      if (!roomId) {
+        return;
+      }
+      void queryClient.invalidateQueries({ queryKey: ROOM_QUERY_KEYS.detail(roomId) });
+    },
+  });
 
   const handleChatSubmit = useCallback(
     async (message: string) => {
@@ -81,28 +146,15 @@ function useRoomChatState({
         createdAt: new Date().toISOString(),
       };
 
-      const prependOptimistic = (messages: ChatMessage[]) => [optimisticMessage, ...messages];
-      applyChatUpdate(prependOptimistic);
-
-      try {
-        const response = await submitChat({
-          roomId,
-          authorId: authorProfile.id,
-          factionId,
-          body: message,
-        });
-
-        const replaceWithServerMessage = (messages: ChatMessage[]) =>
-          replaceChatMessage(messages, optimisticId, response.message);
-
-        applyChatUpdate(replaceWithServerMessage);
-      } catch {
-        const removeOptimistic = (messages: ChatMessage[]) =>
-          messages.filter((chat) => chat.id !== optimisticId);
-        applyChatUpdate(removeOptimistic);
-      }
+      await chatMutation.mutateAsync({
+        roomId,
+        authorId: authorProfile.id,
+        factionId,
+        body: message,
+        optimistic: optimisticMessage,
+      });
     },
-    [applyChatUpdate, currentParticipant, room, roomId, sessionUser, submitChat],
+    [chatMutation, currentParticipant, room, roomId, sessionUser],
   );
 
   return {
@@ -153,14 +205,6 @@ function generateTempId() {
   }
 
   return Math.random().toString(36).slice(2);
-}
-
-function replaceChatMessage(messages: ChatMessage[], targetId: string, nextMessage: ChatMessage) {
-  const filtered = messages.filter(
-    (message) => message.id !== targetId && message.id !== nextMessage.id,
-  );
-
-  return [nextMessage, ...filtered];
 }
 
 export type { UseRoomChatStateParams, UseRoomChatStateResult };

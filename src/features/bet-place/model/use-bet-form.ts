@@ -53,7 +53,7 @@ function useBetForm({ factions, betting }: UseBetFormParams): UseBetFormResult {
 
   const selectedSnapshot = useMemo(() => {
     const targetId = selectedFactionId || factions[0]?.id;
-    return betting.factions.find((snapshot) => snapshot.factionId === targetId);
+    return betting.factions.find((snapshot) => snapshot.id === targetId);
   }, [betting.factions, factions, selectedFactionId]);
 
   const otherPoolPoints = useMemo(() => {

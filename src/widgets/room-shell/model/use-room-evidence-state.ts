@@ -4,14 +4,12 @@ import { useCallback, useMemo } from 'react';
 import type { Participant } from '@/entities/participant/types/participant';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import type { RoomDetail } from '@/entities/room/types/room-detail';
-import type { TeamFactionId } from '@/entities/team/types/team-faction';
 import { useEvidenceMutation } from '@/features/evidence-submit/model/use-evidence-mutation';
 import type { EvidenceSubmitPayload } from '@/features/evidence-submit/ui/evidence-modal';
 
 interface UseRoomEvidenceStateParams {
   room: RoomDetail | null;
   currentParticipant: Participant | null;
-  currentFactionId: TeamFactionId | null;
   currentUserId: string | null;
 }
 
@@ -25,7 +23,6 @@ interface UseRoomEvidenceStateResult {
 function useRoomEvidenceState({
   room,
   currentParticipant,
-  currentFactionId,
   currentUserId,
 }: UseRoomEvidenceStateParams): UseRoomEvidenceStateResult {
   const queryClient = useQueryClient();
@@ -37,7 +34,6 @@ function useRoomEvidenceState({
         return;
       }
 
-      queryClient.setQueryData(ROOM_QUERY_KEYS.evidence(roomId), { evidenceGroups: nextGroups });
       queryClient.setQueryData(
         ROOM_QUERY_KEYS.detail(roomId),
         (previous: RoomDetail | undefined) =>
@@ -69,7 +65,7 @@ function useRoomEvidenceState({
     );
   }, [currentUserId, room?.evidenceGroups]);
 
-  const isEvidenceDisabled = !currentFactionId || hasSubmittedEvidence;
+  const isEvidenceDisabled = !currentParticipant?.factionId || hasSubmittedEvidence;
 
   const handleEvidenceSubmit = useCallback(
     async (payload: EvidenceSubmitPayload) => {

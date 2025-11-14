@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { Participant } from '@/entities/participant/types/participant';
 import { getRoomFactionColor } from '@/entities/room/config/constants';
@@ -20,7 +20,6 @@ interface UseRoomBettingStateResult {
   betting: RoomBettingSnapshot | null;
   currentFaction: RoomFactionSnapshot | null;
   hasPlacedBet: boolean;
-  handleBetPlaced: () => void;
   applyBettingSnapshot: (options: {
     betting: RoomBettingSnapshot;
     participants?: Participant[];
@@ -34,16 +33,6 @@ function useRoomBettingState({
 }: UseRoomBettingStateParams): UseRoomBettingStateResult {
   const queryClient = useQueryClient();
   const roomId = room?.id ?? null;
-  const [hasPlacedBet, setHasPlacedBet] = useState(false);
-  const lastRoomIdRef = useRef<string | null>(roomId);
-
-  useEffect(() => {
-    if (lastRoomIdRef.current === roomId) {
-      return;
-    }
-    setHasPlacedBet(false);
-    lastRoomIdRef.current = roomId;
-  }, [roomId]);
 
   const betting = useMemo<RoomBettingSnapshot | null>(() => {
     if (!room) {
@@ -52,7 +41,7 @@ function useRoomBettingState({
 
     const colorizedFactions = room.betting.factions.map((faction, index) => ({
       ...faction,
-      color: faction.color ?? factionColorMap[faction.id] ?? getRoomFactionColor(index),
+      color: factionColorMap[faction.id] ?? getRoomFactionColor(index),
     }));
 
     return {
@@ -69,9 +58,7 @@ function useRoomBettingState({
     return betting.factions.find((faction) => faction.id === currentParticipant.factionId) ?? null;
   }, [betting, currentParticipant]);
 
-  const handleBetPlaced = useCallback(() => {
-    setHasPlacedBet(true);
-  }, []);
+  const hasPlacedBet = currentParticipant ? currentParticipant.totalBetPoints > 0 : false;
 
   const applyBettingSnapshot = useCallback(
     ({
@@ -83,13 +70,6 @@ function useRoomBettingState({
     }) => {
       if (!roomId) {
         return;
-      }
-
-      queryClient.setQueryData(ROOM_QUERY_KEYS.betting(roomId), { betting: nextBetting });
-      if (nextParticipants) {
-        queryClient.setQueryData(ROOM_QUERY_KEYS.participants(roomId), {
-          participants: nextParticipants,
-        });
       }
 
       queryClient.setQueryData(
@@ -111,7 +91,6 @@ function useRoomBettingState({
     betting,
     currentFaction,
     hasPlacedBet,
-    handleBetPlaced,
     applyBettingSnapshot,
   };
 }

@@ -1,34 +1,9 @@
-import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { getRoomDetail } from '@/entities/room/api/get-room-detail';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
-import type {
-  RoomBettingState,
-  RoomChatState,
-  RoomDetail,
-  RoomEvidenceState,
-  RoomMeta,
-  RoomParticipants,
-} from '@/entities/room/types/room-detail';
-
-function cacheRoomSnapshot(roomId: string, snapshot: RoomDetail, queryClient: QueryClient) {
-  const { participants, betting, evidenceGroups, chatMessages, ...meta } = snapshot;
-
-  queryClient.setQueryData(ROOM_QUERY_KEYS.meta(roomId), { ...meta } as RoomMeta);
-  queryClient.setQueryData(ROOM_QUERY_KEYS.participants(roomId), {
-    participants,
-  } as RoomParticipants);
-  queryClient.setQueryData(ROOM_QUERY_KEYS.betting(roomId), {
-    betting,
-  } as RoomBettingState);
-  queryClient.setQueryData(ROOM_QUERY_KEYS.evidence(roomId), {
-    evidenceGroups,
-  } as RoomEvidenceState);
-  queryClient.setQueryData(ROOM_QUERY_KEYS.chat(roomId), {
-    chatMessages,
-  } as RoomChatState);
-}
+import type { RoomDetail } from '@/entities/room/types/room-detail';
 
 function useRoomDetailSnapshot(roomId: string | null) {
   const queryClient = useQueryClient();
@@ -49,7 +24,8 @@ function useRoomDetailSnapshot(roomId: string | null) {
     if (!roomId || !query.data) {
       return;
     }
-    cacheRoomSnapshot(roomId, query.data, queryClient);
+
+    queryClient.setQueryData(ROOM_QUERY_KEYS.detail(roomId), query.data);
   }, [query.data, queryClient, roomId]);
 
   return query;
