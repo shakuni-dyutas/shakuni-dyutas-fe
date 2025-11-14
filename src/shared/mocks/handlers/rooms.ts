@@ -1045,6 +1045,13 @@ export const roomsHandlers = [
       );
     }
 
+    if (authorProfile.factionId !== factionSnapshot.id) {
+      return HttpResponse.json(
+        { message: '해당 진영의 구성원만 증거를 제출할 수 있어요.' },
+        { status: 403 },
+      );
+    }
+
     const evidenceFactionId = payload.factionId as TeamFactionId;
 
     const newEvidence: EvidenceItem = {
