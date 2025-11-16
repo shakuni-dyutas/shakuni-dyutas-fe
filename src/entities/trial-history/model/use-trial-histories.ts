@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { getTrialHistories } from '@/entities/trial-history/api/get-trial-histories';
 import { TRIAL_HISTORY_QUERY_KEYS } from '@/entities/trial-history/model/trial-history-query-keys';
@@ -17,9 +17,15 @@ function useTrialHistories(params: GetTrialHistoriesParams = {}) {
     ...params,
   };
 
-  return useQuery<TrialHistoryList>({
+  return useInfiniteQuery<TrialHistoryList>({
     queryKey: TRIAL_HISTORY_QUERY_KEYS.list(queryParams),
-    queryFn: () => getTrialHistories(queryParams),
+    queryFn: ({ pageParam }) =>
+      getTrialHistories({
+        ...queryParams,
+        offset: typeof pageParam === 'number' ? pageParam : queryParams.offset,
+      }),
+    initialPageParam: queryParams.offset,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
   });
 }
 

@@ -11,6 +11,8 @@ interface TrialHistory {
 interface TrialHistoryList {
   items: TrialHistory[];
   total: number;
+  nextOffset: number | null;
+  hasMore: boolean;
   offset: number;
   limit: number;
 }

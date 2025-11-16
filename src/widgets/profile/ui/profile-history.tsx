@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useTrialHistories } from '@/entities/trial-history/model/use-trial-histories';
 import type { TrialHistoryResult } from '@/entities/trial-history/types/trial-history';
@@ -20,16 +20,42 @@ interface ProfileHistoryProps {
 }
 
 function ProfileHistory({ limit = 5, className }: ProfileHistoryProps) {
-  const {
-    data: trialHistory,
-    isLoading,
-    isError,
-    refetch,
-  } = useTrialHistories({
-    limit,
-  });
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useTrialHistories({ limit });
 
-  const hasHistory = useMemo(() => (trialHistory?.items.length ?? 0) > 0, [trialHistory]);
+  const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const hasHistory = items.length > 0;
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) {
+      return;
+    }
+
+    const target = loadMoreRef.current;
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        });
+      },
+      {
+        rootMargin: '120px',
+      },
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <section className={cn('mx-auto flex w-full max-w-2xl flex-col gap-4', className)}>
@@ -46,7 +72,7 @@ function ProfileHistory({ limit = 5, className }: ProfileHistoryProps) {
         </div>
       ) : null}
 
-      {isLoading ? <ProfileHistorySkeleton /> : null}
+      {isLoading && !hasHistory ? <ProfileHistorySkeleton /> : null}
 
       {!isLoading && !hasHistory ? (
         <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
@@ -54,9 +80,9 @@ function ProfileHistory({ limit = 5, className }: ProfileHistoryProps) {
         </div>
       ) : null}
 
-      {!isLoading && hasHistory ? (
+      {hasHistory ? (
         <ul className="space-y-3">
-          {trialHistory?.items.map((history) => (
+          {items.map((history) => (
             <li key={history.id} className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <p className="font-medium">{history.title}</p>
@@ -76,6 +102,23 @@ function ProfileHistory({ limit = 5, className }: ProfileHistoryProps) {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      <div ref={loadMoreRef} aria-hidden="true" />
+      {hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="sr-only"
+          >
+            더 보기
+          </Button>
+          {isFetchingNextPage ? (
+            <div className="text-center text-muted-foreground text-sm">불러오는 중...</div>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

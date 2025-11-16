@@ -13,6 +13,7 @@ type TrialHistoryResponse = {
 type TrialHistoryListResponse = {
   items: TrialHistoryResponse[];
   total: number;
+  nextOffset: number | null;
 };
 
 type GetTrialHistoriesParams = {
@@ -49,6 +50,8 @@ async function getTrialHistories(params: GetTrialHistoriesParams = {}): Promise<
   return {
     items: response.items.map(mapTrialHistory),
     total: response.total,
+    nextOffset: response.nextOffset,
+    hasMore: response.nextOffset !== null,
     offset,
     limit,
   };
