@@ -30,6 +30,11 @@ async function exchangeGoogleAuthorizationCode({
       email: response.user.email,
       nickname: response.user.username ?? response.user.email,
       profileImageUrl: response.user.profileImageURL ?? null,
+      points: response.user.points ?? 0,
+      rank: response.user.rank ?? 0,
+      debates: response.user.debates ?? 0,
+      wins: response.user.wins ?? 0,
+      loses: response.user.loses ?? 0,
     },
   };
 }

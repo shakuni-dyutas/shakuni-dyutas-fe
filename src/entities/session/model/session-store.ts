@@ -5,6 +5,11 @@ type SessionUser = {
   email: string;
   nickname: string;
   profileImageUrl?: string | null;
+  points: number;
+  rank: number;
+  debates: number;
+  wins: number;
+  loses: number;
 };
 
 type SessionSnapshot = {
