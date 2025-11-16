@@ -4,27 +4,35 @@ import { useMemo } from 'react';
 
 import { useTrialHistories } from '@/entities/trial-history/model/use-trial-histories';
 import type { TrialHistoryResult } from '@/entities/trial-history/types/trial-history';
+import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
+import { formatNumber } from '@/widgets/profile/lib/format-number';
+import { ProfileHistorySkeleton } from '@/widgets/profile/ui/profile-history.skeleton';
 
 const TRIAL_RESULT_LABEL: Record<TrialHistoryResult, string> = {
   WIN: '승리',
   LOSE: '패배',
 };
 
-function ProfileHistory() {
+interface ProfileHistoryProps {
+  limit?: number;
+  className?: string;
+}
+
+function ProfileHistory({ limit = 5, className }: ProfileHistoryProps) {
   const {
     data: trialHistory,
     isLoading,
     isError,
     refetch,
   } = useTrialHistories({
-    limit: 5,
+    limit,
   });
 
   const hasHistory = useMemo(() => (trialHistory?.items.length ?? 0) > 0, [trialHistory]);
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <section className={cn('mx-auto flex w-full max-w-2xl flex-col gap-4', className)}>
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-lg">최근 재판 히스토리</h2>
         <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={isLoading}>
@@ -38,12 +46,7 @@ function ProfileHistory() {
         </div>
       ) : null}
 
-      {isLoading ? (
-        <div className="space-y-3 rounded-xl border p-4">
-          <div className="h-4 w-1/2 animate-pulse rounded-full bg-muted" />
-          <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
-        </div>
-      ) : null}
+      {isLoading ? <ProfileHistorySkeleton /> : null}
 
       {!isLoading && !hasHistory ? (
         <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
@@ -61,19 +64,15 @@ function ProfileHistory() {
                   {TRIAL_RESULT_LABEL[history.result]}
                 </span>
               </div>
-              <dl className="mt-2 text-muted-foreground text-sm">
-                <div className="flex items-center justify-between">
-                  <dt>포인트</dt>
-                  <dd className={history.pointDelta >= 0 ? 'text-green-600' : 'text-red-600'}>
-                    {history.pointDelta >= 0 ? '+' : ''}
-                    {history.pointDelta} pt
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between">
-                  <dt>날짜</dt>
-                  <dd>{new Date(history.occurredAt).toLocaleString()}</dd>
-                </div>
-              </dl>
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <p className={history.pointDelta >= 0 ? 'text-green-600' : 'text-red-600'}>
+                  {history.pointDelta > 0 ? '+' : history.pointDelta < 0 ? '-' : ''}
+                  {formatNumber(Math.abs(history.pointDelta))} pt
+                </p>
+                <p className="text-muted-foreground">
+                  {new Date(history.occurredAt).toLocaleString()}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
