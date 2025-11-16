@@ -5,7 +5,7 @@ import {
   GOOGLE_AUTH_CODES,
   MOCK_ACCESS_TOKEN,
   MOCK_REFRESHED_ACCESS_TOKEN,
-  MOCK_USER,
+  MOCK_SESSION_USER,
   MOCK_USER_ID,
 } from '@/shared/mocks/handlers/constants';
 
@@ -45,12 +45,7 @@ describe('session-service', () => {
   test('refreshSession 액세스 토큰을 갱신한다', async () => {
     useSessionStore.setState({
       accessToken: 'stale-token',
-      user: {
-        id: MOCK_USER.id,
-        email: MOCK_USER.email,
-        nickname: MOCK_USER.nickname,
-        profileImageUrl: MOCK_USER.profileImageUrl,
-      },
+      user: { ...MOCK_SESSION_USER },
       isAuthenticated: false,
     });
 
@@ -61,17 +56,13 @@ describe('session-service', () => {
     expect(result.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.isAuthenticated).toBe(true);
+    expect(state.user?.id).toBe(MOCK_USER_ID);
   });
 
   test('signOut 호출 시 세션을 초기화한다', async () => {
     useSessionStore.getState().setSession({
       accessToken: MOCK_ACCESS_TOKEN,
-      user: {
-        id: MOCK_USER.id,
-        email: MOCK_USER.email,
-        nickname: MOCK_USER.nickname,
-        profileImageUrl: MOCK_USER.profileImageUrl,
-      },
+      user: { ...MOCK_SESSION_USER },
     });
 
     await signOut();
@@ -88,5 +79,6 @@ describe('session-service', () => {
     const state = useSessionStore.getState();
     expect(state.accessToken).toBe(MOCK_REFRESHED_ACCESS_TOKEN);
     expect(state.isAuthenticated).toBe(true);
+    expect(state.user?.id).toBe(MOCK_USER_ID);
   });
 });

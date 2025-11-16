@@ -1,5 +1,6 @@
 import { useSessionStore } from '@/entities/session/model/session-store';
 import { exchangeGoogleAuthorizationCode } from '@/features/auth/session/api/exchange-google-code';
+import { getSessionUser } from '@/features/auth/session/api/get-session-user';
 import { requestSessionRefresh } from '@/features/auth/session/api/refresh-session';
 import { requestSessionSignOut } from '@/features/auth/session/api/signout-session';
 import { configureApiClientAuthentication } from '@/shared/api/api-client';
@@ -47,6 +48,7 @@ async function refreshSession() {
   const { accessToken } = await requestSessionRefresh();
 
   useSessionStore.getState().setAccessToken(accessToken);
+  await hydrateSessionUser();
 
   return { accessToken };
 }
@@ -82,6 +84,7 @@ async function ensureSessionWithRefreshToken() {
       useSessionStore.getState().setBootstrapping(true);
       const { accessToken } = await requestSessionRefresh();
       useSessionStore.getState().setAccessToken(accessToken);
+      await hydrateSessionUser();
     } catch (error) {
       logDebug('Session', 'Refresh Token으로 액세스 토큰을 갱신하는데 실패했어요.', error);
       useSessionStore.getState().clearSession();
@@ -94,6 +97,17 @@ async function ensureSessionWithRefreshToken() {
     await refreshBootstrapPromise;
   } finally {
     refreshBootstrapPromise = null;
+  }
+}
+
+async function hydrateSessionUser() {
+  try {
+    const user = await getSessionUser();
+    useSessionStore.getState().setUser(user);
+  } catch (error) {
+    logDebug('Session', '세션 사용자 정보를 불러오는데 실패했어요.', error);
+    useSessionStore.getState().clearSession();
+    throw error;
   }
 }
 

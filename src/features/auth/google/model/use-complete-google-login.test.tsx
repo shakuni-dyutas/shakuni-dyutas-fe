@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import type { NormalizedOptions } from 'ky';
 import { HTTPError } from 'ky';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -32,6 +33,15 @@ function createWrapper(client: QueryClient) {
   };
 }
 
+const mockKyOptions: NormalizedOptions = {
+  method: 'POST',
+  headers: new Headers(),
+  prefixUrl: '',
+  retry: {},
+  onDownloadProgress: undefined,
+  onUploadProgress: undefined,
+};
+
 function createHttpError(status: number, body?: unknown) {
   const payload = body ?? {
     errors: [
@@ -47,7 +57,7 @@ function createHttpError(status: number, body?: unknown) {
     headers: { 'Content-Type': 'application/json' },
   });
   const request = new Request('https://example.com/auth/google', { method: 'POST' });
-  return new HTTPError(response, request, {} as any);
+  return new HTTPError(response, request, mockKyOptions);
 }
 
 describe('resolveRedirectPath', () => {

@@ -1,7 +1,17 @@
+import type { NormalizedOptions } from 'ky';
 import { HTTPError } from 'ky';
 import { describe, expect, test } from 'vitest';
 
 import { resolveHttpErrorMessage } from '@/shared/lib/http/resolve-http-error-message';
+
+const mockKyOptions: NormalizedOptions = {
+  method: 'POST',
+  headers: new Headers(),
+  prefixUrl: '',
+  retry: {},
+  onDownloadProgress: undefined,
+  onUploadProgress: undefined,
+};
 
 function createHttpError(status: number, body: unknown) {
   const response = new Response(JSON.stringify(body), {
@@ -9,7 +19,7 @@ function createHttpError(status: number, body: unknown) {
     headers: { 'Content-Type': 'application/json' },
   });
   const request = new Request('https://example.com/api/test', { method: 'POST' });
-  return new HTTPError(response, request, {} as any);
+  return new HTTPError(response, request, mockKyOptions);
 }
 
 describe('resolveHttpErrorMessage', () => {
@@ -39,7 +49,7 @@ describe('resolveHttpErrorMessage', () => {
   test('JSON 파싱이 실패하면 null을 반환한다', async () => {
     const response = new Response('plain text', { status: 500 });
     const request = new Request('https://example.com/api/test', { method: 'POST' });
-    const error = new HTTPError(response, request, {} as any);
+    const error = new HTTPError(response, request, mockKyOptions);
 
     await expect(resolveHttpErrorMessage(error)).resolves.toBeNull();
   });
