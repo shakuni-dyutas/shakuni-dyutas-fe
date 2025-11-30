@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import type { SessionUser } from '@/entities/session/model/session-store';
 
 import { useSessionStore } from '@/entities/session/model/session-store';
+import { ROUTE_PATHS } from '@/shared/config/constants';
 import { MOCK_SESSION_USER } from '@/shared/mocks/handlers/constants';
 
 import { ProfileStats } from './profile-stats';
@@ -43,5 +44,19 @@ describe('ProfileStats', () => {
 
     expect(screen.getByText('987,654 pt')).toBeInTheDocument();
     expect(screen.getByText('Rank #2')).toBeInTheDocument();
+  });
+
+  test('랭킹 페이지 CTA를 노출하고 앵커로 이동한다', () => {
+    useSessionStore.setState({
+      user: MOCK_SESSION_USER,
+      accessToken: 'token',
+      isAuthenticated: true,
+      isBootstrapping: false,
+    });
+    render(<ProfileStats />);
+
+    const cta = screen.getByRole('link', { name: '랭킹 페이지로 이동하여 전체 순위를 확인' });
+    expect(cta).toBeInTheDocument();
+    expect(cta).toHaveAttribute('href', ROUTE_PATHS.RANKINGS);
   });
 });

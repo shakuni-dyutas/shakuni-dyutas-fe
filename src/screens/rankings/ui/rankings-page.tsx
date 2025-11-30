@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 
 import type { GetRankingsParams } from '@/entities/ranking/api/get-rankings';
 import { useRankings } from '@/entities/ranking/model/use-rankings';
-import { RankingsFocusAnchor } from '@/screens/rankings/ui/rankings-focus-anchor';
 import { Button } from '@/shared/ui/button';
 import { RankingList } from '@/widgets/ranking/ui/ranking-list';
 import { RankingPodium } from '@/widgets/ranking/ui/ranking-podium';
@@ -15,19 +14,11 @@ function RankingsPage() {
   const [around, _setAround] = useState<GetRankingsParams['around']>();
   const [loadMoreError, setLoadMoreError] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    isFetching,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useRankings({
-    around,
-    limit: 10,
-  });
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useRankings({
+      around,
+      limit: 10,
+    });
 
   const podium = useMemo(() => data?.pages?.[0]?.podium ?? [], [data]);
   const listItems = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
@@ -72,7 +63,6 @@ function RankingsPage() {
       />
 
       <section className="flex flex-col gap-3">
-        <RankingsFocusAnchor targetId={RANKINGS_LIST_ID} />
         <RankingList
           anchorId={RANKINGS_LIST_ID}
           items={listItems}
