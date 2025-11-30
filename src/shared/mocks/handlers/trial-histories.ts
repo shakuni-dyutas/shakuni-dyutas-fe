@@ -55,11 +55,13 @@ async function handleGetTrialHistories({ request }: { request: Request }) {
 
   const slice = TRIAL_HISTORY_COLLECTION.slice(offset, offset + limit);
   const nextOffset = offset + limit < TRIAL_HISTORY_COLLECTION.length ? offset + limit : null;
+  const hasMore = nextOffset !== null;
 
   return HttpResponse.json({
     items: slice,
     total: TRIAL_HISTORY_COLLECTION.length,
     nextOffset,
+    hasMore,
   });
 }
 
