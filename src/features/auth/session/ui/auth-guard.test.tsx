@@ -38,6 +38,11 @@ describe('AuthGuard', () => {
         email: 'user@example.com',
         nickname: '세션 유저',
         profileImageUrl: null,
+        points: 0,
+        rank: 0,
+        debates: 0,
+        wins: 0,
+        loses: 0,
       },
     });
 
