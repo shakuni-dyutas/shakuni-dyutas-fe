@@ -66,20 +66,23 @@ vi.mock('@/shared/config/constants', () => ({
   ROUTE_PATHS: {
     HOME: '/',
     PROFILE: '/profile',
+    RANKINGS: '/rankings',
   },
 }));
 
 describe('BottomNavigationDefault', () => {
-  test('로비와 프로필 네비게이션만 렌더링된다', async () => {
+  test('로비, 프로필, 랭킹 네비게이션이 렌더링된다', async () => {
     const { BottomNavigationDefault } = await import('./bottom-navigation-default');
 
     render(<BottomNavigationDefault />);
 
     const homeLink = screen.getByRole('link', { name: '로비로 이동' });
     const profileLink = screen.getByRole('link', { name: '프로필로 이동' });
+    const rankingsLink = screen.getByRole('link', { name: '랭킹으로 이동' });
 
     expect(homeLink).toBeInTheDocument();
     expect(profileLink).toBeInTheDocument();
+    expect(rankingsLink).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /방 생성/ })).not.toBeInTheDocument();
   });
 });
