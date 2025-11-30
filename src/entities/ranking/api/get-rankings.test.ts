@@ -33,23 +33,17 @@ beforeEach(() => {
       const url = new URL(request.url);
       const offset = Number(url.searchParams.get('offset') ?? '0');
       const limit = Number(url.searchParams.get('limit') ?? '20');
-      const search = (url.searchParams.get('search') ?? '').toLowerCase();
-
-      const filtered = search
-        ? mockItems.filter((item) => item.nickname.toLowerCase().includes(search))
-        : mockItems;
-
-      const podium = filtered.slice(0, 3);
-      const slice = filtered.slice(Math.max(3, offset), Math.max(3, offset) + limit);
+      const podium = mockItems.slice(0, 3);
+      const slice = mockItems.slice(Math.max(3, offset), Math.max(3, offset) + limit);
       const nextOffset =
-        Math.max(3, offset) + limit < filtered.length ? Math.max(3, offset) + limit : null;
+        Math.max(3, offset) + limit < mockItems.length ? Math.max(3, offset) + limit : null;
 
       return HttpResponse.json({
         podium,
         items: slice,
-        total: filtered.length,
+        total: mockItems.length,
         nextOffset,
-        myRank: filtered.find((item) => item.isCurrentUser)?.rank ?? null,
+        myRank: mockItems.find((item) => item.isCurrentUser)?.rank ?? null,
       });
     }),
   );
@@ -74,14 +68,5 @@ describe('getRankings', () => {
     expect(result.limit).toBe(5);
     expect(result.items).toHaveLength(5);
     expect(result.items[0].rank).toBe(4);
-  });
-
-  it('search 파라미터를 전달하면 필터링된 결과를 반환한다', async () => {
-    const result = await getRankings({ search: 'player-1' });
-
-    expect(result.total).toBeGreaterThan(0);
-    expect(
-      [...result.podium, ...result.items].some((item) => item.nickname.includes('player-1')),
-    ).toBe(true);
   });
 });

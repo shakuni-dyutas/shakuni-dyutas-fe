@@ -77,61 +77,31 @@ function parseNumber(value: string | null, fallback: number) {
   return parsed;
 }
 
-function filterBySearch(collection: RankingUserMock[], rawSearch: string) {
-  const normalized = rawSearch.trim().toLowerCase();
-
-  if (!normalized) {
-    return collection;
-  }
-
-  return collection.filter((item) => item.nickname.toLowerCase().includes(normalized));
-}
-
-function resolveOffsetWithAround(
-  collection: RankingUserMock[],
-  requestedOffset: number,
-  limit: number,
-  around: string | null,
-) {
-  if (around !== 'me') {
-    return requestedOffset;
-  }
-
-  const currentIndex = collection.findIndex((item) => item.isCurrentUser);
-
-  if (currentIndex === -1) {
-    return requestedOffset;
-  }
-
-  const halfWindow = Math.floor(limit / 2);
-  return Math.max(0, currentIndex - halfWindow);
-}
-
 async function handleGetRankings({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  const offset = parseNumber(url.searchParams.get('offset'), 0);
-  const limit = parseNumber(url.searchParams.get('limit'), 20);
-  const search = url.searchParams.get('search') ?? '';
-  const around = url.searchParams.get('around');
+  try {
+    const url = new URL(request.url);
+    const offset = parseNumber(url.searchParams.get('offset'), 0);
+    const limit = parseNumber(url.searchParams.get('limit'), 20);
 
-  const filtered = filterBySearch(RANKING_COLLECTION, search);
-  const podium = filtered.slice(0, 3);
-  const listCollection = filtered.slice(3);
-  const effectiveOffset = resolveOffsetWithAround(listCollection, offset, limit, around);
+    const podium = RANKING_COLLECTION.slice(0, 3);
+    const listCollection = RANKING_COLLECTION.slice(3);
 
-  const slice = listCollection.slice(effectiveOffset, effectiveOffset + limit);
-  const nextOffset =
-    effectiveOffset + limit < listCollection.length ? effectiveOffset + limit : null;
-  const myRank = filtered.find((item) => item.isCurrentUser)?.rank ?? null;
+    const slice = listCollection.slice(offset, offset + limit);
+    const nextOffset = offset + limit < listCollection.length ? offset + limit : null;
+    const myRank = RANKING_COLLECTION.find((item) => item.isCurrentUser)?.rank ?? null;
 
-  return HttpResponse.json({
-    podium,
-    items: slice,
-    total: filtered.length,
-    nextOffset,
-    myRank,
-    hasMore: nextOffset !== null,
-  });
+    return HttpResponse.json({
+      podium,
+      items: slice,
+      total: RANKING_COLLECTION.length,
+      nextOffset,
+      myRank,
+      hasMore: nextOffset !== null,
+    });
+  } catch (error) {
+    console.error('ranking handler error', error);
+    return HttpResponse.json({ message: 'mock error' }, { status: 500 });
+  }
 }
 
 const rankingHandlers = [http.get('*/rankings', handleGetRankings)];

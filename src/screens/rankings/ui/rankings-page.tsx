@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 
-import type { GetRankingsParams } from '@/entities/ranking/api/get-rankings';
 import { useRankings } from '@/entities/ranking/model/use-rankings';
 import { Button } from '@/shared/ui/button';
 import { RankingList } from '@/widgets/ranking/ui/ranking-list';
@@ -11,12 +10,10 @@ import { RankingPodium } from '@/widgets/ranking/ui/ranking-podium';
 const RANKINGS_LIST_ID = 'rankings-list';
 
 function RankingsPage() {
-  const [around, _setAround] = useState<GetRankingsParams['around']>();
   const [loadMoreError, setLoadMoreError] = useState(false);
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useRankings({
-      around,
       limit: 10,
     });
 

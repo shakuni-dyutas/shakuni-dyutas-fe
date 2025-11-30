@@ -6,10 +6,9 @@ import type { RankingList } from '@/entities/ranking/types/ranking';
 
 import type { GetRankingsParams } from '../api/get-rankings';
 
-const DEFAULT_PARAMS: Required<Omit<GetRankingsParams, 'around'>> = {
+const DEFAULT_PARAMS: Required<GetRankingsParams> = {
   offset: 0,
   limit: 20,
-  search: '',
 };
 
 function useRankings(params: GetRankingsParams = {}) {

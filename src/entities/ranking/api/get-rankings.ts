@@ -26,13 +26,10 @@ type RankingsResponse = {
 type GetRankingsParams = {
   offset?: number;
   limit?: number;
-  search?: string;
-  around?: 'me';
 };
 
 const DEFAULT_OFFSET = 0;
 const DEFAULT_LIMIT = 20;
-const DEFAULT_SEARCH = '';
 
 function mapRankingUser(response: RankingUserResponse): RankingUser {
   return {
@@ -52,22 +49,11 @@ function mapRankingUser(response: RankingUserResponse): RankingUser {
 async function getRankings(params: GetRankingsParams = {}): Promise<RankingList> {
   const offset = params.offset ?? DEFAULT_OFFSET;
   const limit = params.limit ?? DEFAULT_LIMIT;
-  const search = params.search ?? DEFAULT_SEARCH;
-  const around = params.around;
 
   const searchParams: Record<string, string> = {
     offset: String(offset),
     limit: String(limit),
   };
-
-  const trimmedSearch = search.trim();
-  if (trimmedSearch) {
-    searchParams.search = trimmedSearch;
-  }
-
-  if (around) {
-    searchParams.around = around;
-  }
 
   const response = await apiClient
     .get('rankings', {
