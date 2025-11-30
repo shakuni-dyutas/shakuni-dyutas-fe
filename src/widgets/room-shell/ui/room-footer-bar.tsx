@@ -15,6 +15,8 @@ interface RoomFooterBarProps {
   hasSubmittedEvidence?: boolean;
   maxLength?: number;
   isBetDisabled?: boolean;
+  isEnded?: boolean;
+  onResultClick?: () => void;
 }
 
 function RoomFooterBar({
@@ -25,6 +27,8 @@ function RoomFooterBar({
   hasSubmittedEvidence,
   maxLength = ROOM_CHAT_CONSTRAINTS.maxLength,
   isBetDisabled,
+  isEnded,
+  onResultClick,
 }: RoomFooterBarProps) {
   const inputId = useId();
   const descriptionId = `${inputId}-description`;
@@ -41,7 +45,7 @@ function RoomFooterBar({
     maxLength,
     onSubmit,
   });
-  const isSubmitDisabled = !value.trim() || Boolean(error);
+  const isSubmitDisabled = isEnded || !value.trim() || Boolean(error);
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px))]">
@@ -53,11 +57,16 @@ function RoomFooterBar({
             isEvidenceDisabled={isEvidenceDisabled}
             hasSubmittedEvidence={hasSubmittedEvidence}
             isBetDisabled={isBetDisabled}
+            isEnded={isEnded}
+            onResultClick={onResultClick}
           />
           <form
             className="flex w-full gap-3"
             onSubmit={(event) => {
               event.preventDefault();
+              if (isEnded) {
+                return;
+              }
               handleSubmit();
             }}
           >
@@ -68,7 +77,7 @@ function RoomFooterBar({
               id={inputId}
               name="room-chat-input"
               className="flex-1 rounded-full border-2 border-border bg-muted/30 px-6 py-6 text-base"
-              placeholder="채팅을 입력하세요."
+              placeholder={isEnded ? '종료된 재판입니다.' : '채팅을 입력하세요.'}
               value={value}
               onChange={(event) => handleChange(event.target.value)}
               onKeyDown={handleKeyDown}
@@ -76,6 +85,7 @@ function RoomFooterBar({
               onCompositionEnd={handleCompositionEnd}
               aria-describedby={descriptionId}
               aria-invalid={Boolean(error)}
+              disabled={isEnded}
             />
             <Button
               type="submit"
@@ -88,7 +98,7 @@ function RoomFooterBar({
           </form>
           <div className="flex items-center justify-between px-1 text-xs" id={descriptionId}>
             <p className={error ? 'text-destructive' : 'text-muted-foreground'}>
-              {error ?? `남은 글자 수 ${remaining}자`}
+              {isEnded ? '종료된 재판입니다.' : (error ?? `남은 글자 수 ${remaining}자`)}
             </p>
           </div>
         </div>

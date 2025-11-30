@@ -963,6 +963,32 @@ export const roomsHandlers = [
     });
   }),
 
+  http.post('*/rooms/:roomId/mock-end', async ({ params }) => {
+    const { roomId } = params as { roomId: string };
+    const now = Date.now();
+    const endsAt = new Date(now + 60 * 1000).toISOString();
+
+    broadcastRoomEvent(roomId, {
+      type: 'room-ending',
+      data: {
+        endsAt,
+        endsInSeconds: 60,
+      },
+    });
+
+    setTimeout(() => {
+      broadcastRoomEvent(roomId, {
+        type: 'room-ended',
+        data: {
+          roomId,
+          resultPath: `/rooms/${roomId}/result`,
+        },
+      });
+    }, 500);
+
+    return HttpResponse.json({ message: 'room end simulated' });
+  }),
+
   http.post('*/rooms/:roomId/evidences', async ({ params, request }) => {
     const { roomId } = params as { roomId: string };
     const formData = await request.formData();

@@ -33,6 +33,22 @@ interface BettingUpdatedEvent {
   };
 }
 
+interface RoomEndingEvent {
+  type: 'room-ending';
+  data: {
+    endsAt: string;
+    endsInSeconds?: number;
+  };
+}
+
+interface RoomEndedEvent {
+  type: 'room-ended';
+  data: {
+    roomId: string;
+    resultPath?: string;
+  };
+}
+
 interface KeepAliveEvent {
   type: 'keep-alive';
 }
@@ -42,4 +58,6 @@ export type RoomServerEvent =
   | EvidenceUpdatedEvent
   | ParticipantUpdatedEvent
   | BettingUpdatedEvent
+  | RoomEndingEvent
+  | RoomEndedEvent
   | KeepAliveEvent;

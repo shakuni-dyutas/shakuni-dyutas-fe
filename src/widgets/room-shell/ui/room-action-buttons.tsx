@@ -1,4 +1,4 @@
-import { Coins, FilePlus2 } from 'lucide-react';
+import { Coins, FilePlus2, SquareArrowOutUpRight } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 
@@ -8,6 +8,8 @@ interface RoomActionButtonsProps {
   isEvidenceDisabled?: boolean;
   hasSubmittedEvidence?: boolean;
   isBetDisabled?: boolean;
+  isEnded?: boolean;
+  onResultClick?: () => void;
 }
 
 function RoomActionButtons({
@@ -16,7 +18,25 @@ function RoomActionButtons({
   isEvidenceDisabled,
   hasSubmittedEvidence,
   isBetDisabled,
+  isEnded,
+  onResultClick,
 }: RoomActionButtonsProps) {
+  if (isEnded) {
+    return (
+      <div className="flex flex-row gap-3">
+        <Button
+          className="h-14 w-full rounded-full font-semibold text-base"
+          size="lg"
+          onClick={onResultClick}
+          variant="destructive"
+        >
+          <SquareArrowOutUpRight className="size-5" aria-hidden />
+          <span>결과 확인</span>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-row gap-3">
       <Button
