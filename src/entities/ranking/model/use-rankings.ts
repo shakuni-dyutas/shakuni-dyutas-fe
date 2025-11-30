@@ -27,6 +27,7 @@ function useRankings(params: GetRankingsParams = {}) {
       }),
     initialPageParam: queryParams.offset ?? DEFAULT_PARAMS.offset,
     getNextPageParam: (lastPage) => lastPage.nextOffset,
+    retry: 0,
   });
 }
 
