@@ -6,6 +6,8 @@ import { useRoomEndFlow } from './use-room-end-flow';
 
 const replaceMock = vi.fn();
 const handlersRef: { current: RoomEventHandlers | null } = { current: null };
+const toastInfoMock = vi.fn();
+const toastSuccessMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -20,15 +22,25 @@ vi.mock('@/entities/room/model/use-room-events', () => ({
   },
 }));
 
+vi.mock('sonner', () => ({
+  toast: {
+    info: (...args: unknown[]) => toastInfoMock(...args),
+    success: (...args: unknown[]) => toastSuccessMock(...args),
+  },
+}));
+
 describe('useRoomEndFlow', () => {
   beforeEach(() => {
     handlersRef.current = null;
     replaceMock.mockReset();
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    toastInfoMock.mockReset();
+    toastSuccessMock.mockReset();
+  });
 
-  test('room-ending 이벤트로 종료 알림 상태를 업데이트한다', () => {
+  test('room-ending 이벤트로 토스트를 띄우고 종료 알림 상태를 업데이트한다', () => {
     const { result } = renderHook(() => useRoomEndFlow('room-1'));
 
     act(() => {
@@ -43,9 +55,10 @@ describe('useRoomEndFlow', () => {
       endsInSeconds: 120,
     });
     expect(result.current.endedInfo).toBeNull();
+    expect(toastInfoMock).toHaveBeenCalled();
   });
 
-  test('room-ended 이벤트로 결과 페이지 이동을 수행한다', () => {
+  test('room-ended 이벤트로 토스트를 띄우고 수동 CTA로만 이동한다', () => {
     const { result } = renderHook(() => useRoomEndFlow('room-1'));
 
     act(() => {
@@ -60,6 +73,8 @@ describe('useRoomEndFlow', () => {
       roomId: 'room-1',
       resultPath: '/rooms/room-1/result',
     });
+    expect(toastSuccessMock).toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
 
     act(() => {
       result.current.handleViewResult();
