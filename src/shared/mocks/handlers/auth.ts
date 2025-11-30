@@ -114,6 +114,11 @@ async function handleSessionSelf() {
     profileImageURL: MOCK_USER.profileImageURL,
     userId: MOCK_USER.userId,
     username: MOCK_USER.username,
+    points: MOCK_USER.points,
+    rank: MOCK_USER.rank,
+    debates: MOCK_USER.debates,
+    wins: MOCK_USER.wins,
+    loses: MOCK_USER.loses,
   });
 }
 

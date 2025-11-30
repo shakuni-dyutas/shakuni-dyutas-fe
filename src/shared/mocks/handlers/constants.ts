@@ -7,6 +7,11 @@ export const MOCK_USER = {
   email: 'player@dyutas.app',
   username: 'Dyutas Player',
   profileImageURL: null,
+  points: 12345,
+  rank: 12,
+  debates: 87,
+  wins: 45,
+  loses: 42,
 };
 
 export const MOCK_SESSION_USER = {
@@ -14,6 +19,11 @@ export const MOCK_SESSION_USER = {
   email: MOCK_USER.email,
   nickname: MOCK_USER.username ?? 'Dyutas Player',
   profileImageUrl: MOCK_USER.profileImageURL,
+  points: MOCK_USER.points,
+  rank: MOCK_USER.rank,
+  debates: MOCK_USER.debates,
+  wins: MOCK_USER.wins,
+  loses: MOCK_USER.loses,
 };
 
 export const MOCK_USER_ID = MOCK_USER.userId;
