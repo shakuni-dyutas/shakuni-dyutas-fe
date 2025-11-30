@@ -1,66 +1,73 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useMemo, useState } from 'react';
+
+import type { GetRankingsParams } from '@/entities/ranking/api/get-rankings';
+import { useRankings } from '@/entities/ranking/model/use-rankings';
 import { RankingsFocusAnchor } from '@/screens/rankings/ui/rankings-focus-anchor';
-import { cn } from '@/shared/lib/utils';
+import { RankingList } from '@/widgets/ranking/ui/ranking-list';
+import { RankingPodium } from '@/widgets/ranking/ui/ranking-podium';
 
 const RANKINGS_LIST_ID = 'rankings-list';
 
 function RankingsPage() {
+  const [around, setAround] = useState<GetRankingsParams['around']>();
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useRankings({
+    around,
+    limit: 10,
+  });
+
+  const podium = useMemo(() => data?.pages?.[0]?.podium ?? [], [data]);
+  const listItems = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const myRank = data?.pages?.[0]?.myRank ?? null;
+  const currentUser = useMemo(() => {
+    const candidates = [...podium, ...listItems];
+    return candidates.find((user) => user.isCurrentUser) ?? null;
+  }, [listItems, podium]);
+  const isInitialLoading = isLoading && !data;
+
+  const _handleMoveToMyRank = () => {
+    setAround('me');
+    window.location.hash = `#${RANKINGS_LIST_ID}`;
+    const anchor = document.getElementById(RANKINGS_LIST_ID);
+    setTimeout(() => anchor?.focus({ preventScroll: false }), 0);
+  };
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-6">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <search
-          aria-label="랭킹 검색 영역"
-          className="h-11 w-full rounded-lg bg-muted/70 md:max-w-md"
-        />
-        <a
-          href={`#${RANKINGS_LIST_ID}`}
-          className="font-semibold text-primary text-sm hover:underline focus-visible:underline"
-        >
-          내 순위로 이동
-        </a>
-      </header>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6">
+      <h1 className="font-semibold text-xl">글로벌 랭킹</h1>
 
-      <section aria-label="상위 3위 포디움" className="grid gap-4 md:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={`podium-skeleton-${index + 1}`}
-            className={cn(
-              'rounded-xl border border-border bg-card p-4 shadow-sm',
-              index === 0 && 'md:translate-y-0',
-              index === 1 && 'md:translate-y-2',
-              index === 2 && 'md:translate-y-4',
-            )}
-          >
-            <div className="mb-3 h-6 w-20 rounded-full bg-muted/70" />
-            <div className="mb-2 h-4 w-28 rounded-full bg-muted/60" />
-            <div className="h-4 w-16 rounded-full bg-muted/50" />
-          </div>
-        ))}
-      </section>
+      <RankingPodium
+        users={podium}
+        isLoading={isInitialLoading}
+        isError={isError}
+        onRetry={refetch}
+      />
 
-      <section
-        id={RANKINGS_LIST_ID}
-        tabIndex={-1}
-        aria-label="랭킹 목록"
-        className="flex flex-col gap-3"
-      >
+      <section className="flex flex-col gap-3">
         <RankingsFocusAnchor targetId={RANKINGS_LIST_ID} />
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={`ranking-card-skeleton-${index + 1}`}
-            className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-4 w-8 rounded-full bg-muted/60" />
-              <div className="h-10 w-10 rounded-full bg-muted/70" />
-              <div className="flex flex-col gap-1">
-                <div className="h-4 w-28 rounded-full bg-muted/70" />
-                <div className="h-3 w-20 rounded-full bg-muted/50" />
-              </div>
-            </div>
-            <div className="h-4 w-16 rounded-full bg-muted/60" />
-          </div>
-        ))}
+        <RankingList
+          anchorId={RANKINGS_LIST_ID}
+          items={listItems}
+          isLoading={isInitialLoading}
+          isError={isError}
+          onRetry={refetch}
+          hasNextPage={hasNextPage}
+          onLoadMore={() => fetchNextPage()}
+          isFetchingNextPage={isFetchingNextPage}
+          myRank={myRank}
+          currentUser={currentUser}
+        />
       </section>
     </div>
   );
@@ -70,9 +77,4 @@ function RankingsPageFallback() {
   return null;
 }
 
-const rankingsMetadata: Metadata = {
-  title: '랭킹',
-  description: '글로벌 랭킹과 상위 사용자 포디움을 확인하세요.',
-};
-
-export { RANKINGS_LIST_ID, RankingsPage, RankingsPageFallback, rankingsMetadata };
+export { RANKINGS_LIST_ID, RankingsPage, RankingsPageFallback };

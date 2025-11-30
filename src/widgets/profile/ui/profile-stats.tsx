@@ -2,7 +2,7 @@
 
 import { Crown, Trophy } from 'lucide-react';
 import { useSessionStore } from '@/entities/session/model/session-store';
-import { formatPoints, formatRank } from '@/widgets/profile/lib/format-number';
+import { formatPoints, formatRank } from '@/shared/lib/format-number';
 import { ProfileStatsSkeleton } from '@/widgets/profile/ui/profile-stats.skeleton';
 
 function ProfileStats() {

@@ -134,6 +134,6 @@ async function handleGetRankings({ request }: { request: Request }) {
   });
 }
 
-const rankingHandlers = [http.get('*/api/rankings', handleGetRankings)];
+const rankingHandlers = [http.get('*/rankings', handleGetRankings)];
 
 export { RANKING_COLLECTION, buildRankingUserMock, rankingHandlers };
