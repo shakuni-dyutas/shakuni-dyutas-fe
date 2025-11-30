@@ -64,7 +64,6 @@ describe('CreateRoomPanel', () => {
     renderWithQueryClient();
 
     expect(screen.getByRole('heading', { name: '기본 정보' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '공개 설정' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '진영 구성' })).toBeInTheDocument();
     expect(screen.getByLabelText(/방 제목/)).toBeInTheDocument();
     expect(screen.getByLabelText(/진영 이름/)).toBeInTheDocument();
@@ -88,46 +87,6 @@ describe('CreateRoomPanel', () => {
 
     expect(screen.getAllByText('진영 이름을 입력해 주세요.')[0]).toBeInTheDocument();
     expect(screen.getAllByText('진영 설명을 입력해 주세요.')[0]).toBeInTheDocument();
-  });
-
-  test('비공개 전환 시 비밀번호 입력이 나타났다가 공개로 돌아오면 숨겨진다', async () => {
-    const user = userEvent.setup();
-    renderWithQueryClient();
-
-    expect(screen.queryByLabelText('방 비밀번호')).not.toBeInTheDocument();
-
-    const [privateRadio] = screen.getAllByRole('radio', { name: /비공개방/ });
-    await user.click(privateRadio);
-    expect(screen.getByLabelText('방 비밀번호')).toBeInTheDocument();
-
-    const [publicRadio] = screen.getAllByRole('radio', { name: /공개방/ });
-    await user.click(publicRadio);
-    expect(screen.queryByLabelText('방 비밀번호')).not.toBeInTheDocument();
-  });
-
-  test('비공개 상태에서 비밀번호 없이 제출하면 오류 메시지를 표시한다', async () => {
-    const user = userEvent.setup();
-    renderWithQueryClient();
-
-    await user.type(screen.getByLabelText(/방 제목/), '비공개 방');
-    await user.type(screen.getByLabelText(/제한 시간/), '45');
-    await user.type(screen.getByLabelText(/최소 배팅 포인트/), '200');
-    await user.type(screen.getByLabelText(/진영 이름/), '진영 A');
-    await user.type(screen.getByLabelText(/진영 설명/), '설명');
-
-    const [privateRadio] = screen.getAllByRole('radio', { name: /비공개방/ });
-    await user.click(privateRadio);
-
-    const submitButton = screen.getByRole('button', { name: '방 생성' });
-    expect(submitButton).toBeDisabled();
-
-    await act(async () => {
-      fireEvent.submit(screen.getByTestId('create-room-form'));
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('비공개 방의 비밀번호를 입력해 주세요.')).toBeInTheDocument();
-    });
   });
 
   test('진영을 추가하고 제거할 수 있다', async () => {

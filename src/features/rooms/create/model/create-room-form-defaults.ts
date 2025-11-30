@@ -10,8 +10,6 @@ const createRoomFormDefaultValues: CreateRoomFormValues = {
   description: '',
   timeLimitMinutes: '',
   minBetPoint: '',
-  visibility: 'public',
-  password: '',
   factions: [{ ...createRoomFactionDefaultValues }],
 };
 

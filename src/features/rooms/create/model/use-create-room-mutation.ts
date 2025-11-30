@@ -17,15 +17,11 @@ const CREATE_ROOM_SUCCESS_MESSAGE = '방 생성이 완료되었어요.';
 const CREATE_ROOM_ERROR_MESSAGE = '방 생성에 실패했어요. 잠시 후 다시 시도해 주세요.';
 
 function mapFormValuesToRequest(values: CreateRoomFormValues): CreateRoomRequest {
-  const password = values.visibility === 'private' ? values.password : undefined;
-
   return {
     title: values.title,
     description: values.description,
     timeLimitMinutes: Number(values.timeLimitMinutes),
     minBetPoint: Number(values.minBetPoint),
-    visibility: values.visibility,
-    password,
     factions: values.factions.map((faction) => ({
       title: faction.title,
       description: faction.description,

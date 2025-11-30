@@ -21,16 +21,8 @@ import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 
 function CreateRoomPanel() {
-  const {
-    form,
-    factionFields,
-    appendFaction,
-    removeFaction,
-    isPrivateRoom,
-    canAppendFaction,
-    setVisibility,
-    resetForm,
-  } = useCreateRoomForm();
+  const { form, factionFields, appendFaction, removeFaction, canAppendFaction, resetForm } =
+    useCreateRoomForm();
   const { createRoom, isCreatingRoom } = useCreateRoomMutation();
   const isSubmitting = form.formState.isSubmitting || isCreatingRoom;
   const isFormValid = form.formState.isValid;
@@ -161,99 +153,6 @@ function CreateRoomPanel() {
                     )}
                   />
                 </div>
-              </section>
-
-              <section className="space-y-4">
-                <div className="space-y-2">
-                  <h2 className="font-semibold text-lg">공개 설정</h2>
-                  <p className="text-muted-foreground text-sm">
-                    공개 여부를 선택하고 필요 시 비밀번호를 설정하세요.
-                  </p>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="visibility"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel className="sr-only">공개 여부</FormLabel>
-                      <FormControl>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <label className="flex cursor-pointer gap-3 rounded-2xl border border-border bg-muted/20 p-4 transition focus-within:border-primary hover:border-primary">
-                            <input
-                              ref={field.ref}
-                              name={field.name}
-                              onBlur={field.onBlur}
-                              type="radio"
-                              value="public"
-                              checked={field.value === 'public'}
-                              onChange={() => {
-                                field.onChange('public');
-                                setVisibility('public');
-                              }}
-                              className="mt-1 h-4 w-4 border-primary text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            />
-                            <span className="space-y-1">
-                              <span className="block font-semibold text-sm">공개방</span>
-                              <span className="block text-muted-foreground text-xs">
-                                누구나 링크로 방에 참여할 수 있습니다.
-                              </span>
-                            </span>
-                          </label>
-                          <label className="flex cursor-pointer gap-3 rounded-2xl border border-border bg-muted/20 p-4 transition focus-within:border-primary hover:border-primary">
-                            <input
-                              ref={field.ref}
-                              name={field.name}
-                              onBlur={field.onBlur}
-                              type="radio"
-                              value="private"
-                              checked={field.value === 'private'}
-                              onChange={() => {
-                                field.onChange('private');
-                                setVisibility('private');
-                              }}
-                              className="mt-1 h-4 w-4 border-primary text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            />
-                            <span className="space-y-1">
-                              <span className="block font-semibold text-sm">비공개방</span>
-                              <span className="block text-muted-foreground text-xs">
-                                비밀번호를 아는 사용자만 참여할 수 있습니다.
-                              </span>
-                            </span>
-                          </label>
-                        </div>
-                      </FormControl>
-                      {fieldState.error ? (
-                        <FormMessage>{fieldState.error.message}</FormMessage>
-                      ) : null}
-                    </FormItem>
-                  )}
-                />
-
-                {isPrivateRoom ? (
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel>방 비밀번호</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="비밀번호를 입력해 주세요"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          비공개방 참여자에게만 공유할 비밀번호입니다.
-                        </FormDescription>
-                        {fieldState.error ? (
-                          <FormMessage>{fieldState.error.message}</FormMessage>
-                        ) : null}
-                      </FormItem>
-                    )}
-                  />
-                ) : null}
               </section>
 
               <section className="space-y-4">
