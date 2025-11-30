@@ -10,8 +10,6 @@ interface CreateRoomRequest {
   description: string;
   timeLimitMinutes: number;
   minBetPoint: number;
-  visibility: 'public' | 'private';
-  password?: string;
   factions: CreateRoomFactionRequest[];
 }
 
