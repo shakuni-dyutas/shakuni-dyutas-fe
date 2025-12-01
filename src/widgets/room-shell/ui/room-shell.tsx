@@ -125,9 +125,7 @@ function RoomShell({ roomId }: RoomShellProps) {
     }
     setIsMockingEnd(true);
     try {
-      await fetch(`/api/rooms/${roomId}/end`, {
-        method: 'POST',
-      });
+      await fetch(`/api/rooms/${roomId}/end`);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to trigger mock end event', error);
