@@ -125,7 +125,7 @@ function RoomShell({ roomId }: RoomShellProps) {
     }
     setIsMockingEnd(true);
     try {
-      await fetch(`/api/rooms/${roomId}/mock-end`, {
+      await fetch(`/api/rooms/${roomId}/end`, {
         method: 'POST',
       });
     } catch (error) {

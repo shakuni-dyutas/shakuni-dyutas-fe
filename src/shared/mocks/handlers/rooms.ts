@@ -963,7 +963,7 @@ export const roomsHandlers = [
     });
   }),
 
-  http.post('*/rooms/:roomId/mock-end', async ({ params }) => {
+  http.post('*/rooms/:roomId/end', async ({ params }) => {
     const { roomId } = params as { roomId: string };
     const now = Date.now();
     const endsAt = new Date(now + 60 * 1000).toISOString();
