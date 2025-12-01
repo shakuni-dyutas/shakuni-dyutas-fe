@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
@@ -19,6 +19,11 @@ function useRoomEvents(roomId: string | null, handlers: RoomEventHandlers = {}) 
   const queryClient = useQueryClient();
   const [connectionState, setConnectionState] = useState<SseConnectionState>('idle');
   const [lastError, setLastError] = useState<Error | null>(null);
+  const handlersRef = useRef<RoomEventHandlers>({});
+
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
 
   useEffect(() => {
     if (!roomId || typeof window === 'undefined') {
@@ -176,7 +181,7 @@ function useRoomEvents(roomId: string | null, handlers: RoomEventHandlers = {}) 
       if (!payload) {
         return;
       }
-      handlers.onRoomEnding?.(payload);
+      handlersRef.current.onRoomEnding?.(payload);
     };
 
     const handleRoomEnded = (event: MessageEvent<string>) => {
@@ -186,7 +191,7 @@ function useRoomEvents(roomId: string | null, handlers: RoomEventHandlers = {}) 
       if (!payload) {
         return;
       }
-      handlers.onRoomEnded?.(payload);
+      handlersRef.current.onRoomEnded?.(payload);
     };
 
     eventSource.addEventListener('chat-updated', handleChat);
@@ -205,7 +210,7 @@ function useRoomEvents(roomId: string | null, handlers: RoomEventHandlers = {}) 
       eventSource.removeEventListener('room-ended', handleRoomEnded);
       eventSource.close();
     };
-  }, [handlers.onRoomEnded, handlers.onRoomEnding, queryClient, roomId]);
+  }, [queryClient, roomId]);
 
   return { connectionState, lastError };
 }

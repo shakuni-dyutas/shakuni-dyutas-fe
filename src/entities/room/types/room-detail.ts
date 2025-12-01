@@ -35,6 +35,8 @@ export interface RoomMeta {
   host: ParticipantProfile;
   countdown: RoomCountdown;
   factionInfos: TeamFaction[];
+  ended?: boolean;
+  endedAt?: string | null;
 }
 
 export interface RoomParticipants {

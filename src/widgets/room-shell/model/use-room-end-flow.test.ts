@@ -1,7 +1,9 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
 import type { RoomEventHandlers } from '@/entities/room/model/use-room-events';
+import type { RoomDetail } from '@/entities/room/types/room-detail';
+import { ROUTE_PATHS } from '@/shared/config/constants';
 import { useRoomEndFlow } from './use-room-end-flow';
 
 const replaceMock = vi.fn();
@@ -38,6 +40,19 @@ describe('useRoomEndFlow', () => {
   afterEach(() => {
     toastInfoMock.mockReset();
     toastSuccessMock.mockReset();
+  });
+
+  test('초기 room detail이 종료 상태면 종료 UI를 즉시 노출한다', async () => {
+    const roomDetail = { id: 'room-1', ended: true } as unknown as RoomDetail;
+
+    const { result } = renderHook(() => useRoomEndFlow('room-1', roomDetail));
+
+    await waitFor(() => {
+      expect(result.current.endedInfo).toEqual({
+        roomId: 'room-1',
+        resultPath: ROUTE_PATHS.ROOM_RESULT('room-1'),
+      });
+    });
   });
 
   test('room-ending 이벤트로 토스트를 띄우고 종료 알림 상태를 업데이트한다', () => {

@@ -27,7 +27,7 @@ interface RoomShellProps {
 
 function RoomShell({ roomId }: RoomShellProps) {
   const detailQuery = useRoomDetailSnapshot(roomId);
-  const { endedInfo, handleViewResult } = useRoomEndFlow(roomId);
+  const { endedInfo, handleViewResult } = useRoomEndFlow(roomId, detailQuery.data);
   const [isMockingEnd, setIsMockingEnd] = useState(false);
   const isDev = process.env.NODE_ENV !== 'production';
 
