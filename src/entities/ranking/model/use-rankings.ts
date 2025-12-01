@@ -16,9 +16,10 @@ function useRankings(params: GetRankingsParams = {}) {
     ...DEFAULT_PARAMS,
     ...params,
   };
+  const queryKeyParams: GetRankingsParams = { ...queryParams, offset: undefined };
 
   return useInfiniteQuery<RankingList>({
-    queryKey: RANKING_QUERY_KEYS.list(queryParams),
+    queryKey: RANKING_QUERY_KEYS.list(queryKeyParams),
     queryFn: ({ pageParam }) =>
       getRankings({
         ...queryParams,
