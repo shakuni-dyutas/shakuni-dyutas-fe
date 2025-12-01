@@ -6,10 +6,10 @@ import type { RankingList } from '@/entities/ranking/types/ranking';
 
 import type { GetRankingsParams } from '../api/get-rankings';
 
-const DEFAULT_PARAMS: Required<GetRankingsParams> = {
+const DEFAULT_PARAMS = {
   offset: 0,
   limit: 20,
-};
+} satisfies Pick<GetRankingsParams, 'offset' | 'limit'>;
 
 function useRankings(params: GetRankingsParams = {}) {
   const queryParams: GetRankingsParams = {
@@ -24,8 +24,9 @@ function useRankings(params: GetRankingsParams = {}) {
         ...queryParams,
         offset: typeof pageParam === 'number' ? pageParam : queryParams.offset,
       }),
-    initialPageParam: queryParams.offset ?? DEFAULT_PARAMS.offset,
-    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    initialPageParam: queryParams.offset,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? (lastPage.nextOffset ?? undefined) : undefined,
     retry: 0,
   });
 }

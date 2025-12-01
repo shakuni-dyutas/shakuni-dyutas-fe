@@ -25,6 +25,7 @@ function RankingsPage() {
     return candidates.find((user) => user.isCurrentUser) ?? null;
   }, [listItems, podium]);
   const isInitialLoading = isLoading && !data;
+  const listError = isError || loadMoreError;
 
   const handleLoadMore = async () => {
     setLoadMoreError(false);
@@ -55,7 +56,7 @@ function RankingsPage() {
       <RankingPodium
         users={podium}
         isLoading={isInitialLoading}
-        isError={false}
+        isError={isError}
         onRetry={refetch}
       />
 
@@ -64,7 +65,7 @@ function RankingsPage() {
           anchorId={RANKINGS_LIST_ID}
           items={listItems}
           isLoading={isInitialLoading}
-          isError={false}
+          isError={listError}
           onRetry={refetch}
           hasNextPage={hasNextPage}
           onLoadMore={handleLoadMore}
