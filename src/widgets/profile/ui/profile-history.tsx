@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { useTrialHistories } from '@/entities/trial-history/model/use-trial-histories';
 import type { TrialHistoryResult } from '@/entities/trial-history/types/trial-history';
+import { formatNumber } from '@/shared/lib/format-number';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
-import { formatNumber } from '@/widgets/profile/lib/format-number';
 import { ProfileHistorySkeleton } from '@/widgets/profile/ui/profile-history.skeleton';
 
 const TRIAL_RESULT_LABEL: Record<TrialHistoryResult, string> = {

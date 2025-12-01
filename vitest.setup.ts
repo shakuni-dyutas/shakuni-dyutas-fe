@@ -2,12 +2,11 @@ import '@testing-library/jest-dom/vitest';
 
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
 
-import { server } from '@/shared/mocks/server';
 import { resetAuthMockState } from '@/shared/mocks/handlers/auth';
+import { server } from '@/shared/mocks/server';
 
-if (!process.env.NEXT_PUBLIC_API_URL) {
-  process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api';
-}
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api';
+process.env.NEXT_PUBLIC_API_MOCKING = 'disabled';
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });

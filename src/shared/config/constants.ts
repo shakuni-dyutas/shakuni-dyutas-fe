@@ -17,6 +17,7 @@ export const ROUTE_PATHS = {
   HOME: '/',
   LOGIN: '/login',
   PROFILE: '/profile',
+  RANKINGS: '/rankings',
   ROOM_CREATE: '/rooms/create',
   ROOM(roomId: string): string {
     return `/rooms/${roomId}`;
