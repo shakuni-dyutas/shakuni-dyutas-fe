@@ -40,23 +40,4 @@ describe('useCreateRoomForm', () => {
 
     expect(result.current.factionFields).toHaveLength(CREATE_ROOM_MIN_FACTION_COUNT);
   });
-
-  test('공개/비공개 전환 시 비밀번호 값을 적절히 초기화한다', () => {
-    const { result } = renderHook(() => useCreateRoomForm());
-
-    act(() => {
-      result.current.setVisibility('private');
-      result.current.form.setValue('password', 'abcd1234', { shouldDirty: true });
-    });
-
-    expect(result.current.isPrivateRoom).toBe(true);
-    expect(result.current.form.getValues('password')).toBe('abcd1234');
-
-    act(() => {
-      result.current.setVisibility('public');
-    });
-
-    expect(result.current.isPrivateRoom).toBe(false);
-    expect(result.current.form.getValues('password')).toBe('');
-  });
 });

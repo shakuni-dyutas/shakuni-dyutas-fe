@@ -1,18 +1,29 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/entities/chat/types/chat-message';
 import type { EvidenceItem } from '@/entities/evidence/types/evidence';
 import type { Participant } from '@/entities/participant/types/participant';
 import { ROOM_QUERY_KEYS } from '@/entities/room/model/room-query-keys';
 import type { RoomBettingState, RoomDetail } from '@/entities/room/types/room-detail';
+import type { RoomServerEvent } from '@/entities/room/types/room-event';
 import type { TeamFactionId } from '@/entities/team/types/team-faction';
 import { createEventSource, type SseConnectionState } from '@/shared/api/sse-client';
 
-function useRoomEvents(roomId: string | null) {
+interface RoomEventHandlers {
+  onRoomEnding?: (data: Extract<RoomServerEvent, { type: 'room-ending' }>['data']) => void;
+  onRoomEnded?: (data: Extract<RoomServerEvent, { type: 'room-ended' }>['data']) => void;
+}
+
+function useRoomEvents(roomId: string | null, handlers: RoomEventHandlers = {}) {
   const queryClient = useQueryClient();
   const [connectionState, setConnectionState] = useState<SseConnectionState>('idle');
   const [lastError, setLastError] = useState<Error | null>(null);
+  const handlersRef = useRef<RoomEventHandlers>({});
+
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
 
   useEffect(() => {
     if (!roomId || typeof window === 'undefined') {
@@ -163,19 +174,43 @@ function useRoomEvents(roomId: string | null) {
       );
     };
 
+    const handleRoomEnding = (event: MessageEvent<string>) => {
+      const payload = parseJson<Extract<RoomServerEvent, { type: 'room-ending' }>['data']>(
+        event.data,
+      );
+      if (!payload) {
+        return;
+      }
+      handlersRef.current.onRoomEnding?.(payload);
+    };
+
+    const handleRoomEnded = (event: MessageEvent<string>) => {
+      const payload = parseJson<Extract<RoomServerEvent, { type: 'room-ended' }>['data']>(
+        event.data,
+      );
+      if (!payload) {
+        return;
+      }
+      handlersRef.current.onRoomEnded?.(payload);
+    };
+
     eventSource.addEventListener('chat-updated', handleChat);
     eventSource.addEventListener('evidence-updated', handleEvidence);
     eventSource.addEventListener('participant-updated', handleParticipant);
     eventSource.addEventListener('betting-updated', handleBetting);
+    eventSource.addEventListener('room-ending', handleRoomEnding);
+    eventSource.addEventListener('room-ended', handleRoomEnded);
 
     return () => {
       eventSource.removeEventListener('chat-updated', handleChat);
       eventSource.removeEventListener('evidence-updated', handleEvidence);
       eventSource.removeEventListener('participant-updated', handleParticipant);
       eventSource.removeEventListener('betting-updated', handleBetting);
+      eventSource.removeEventListener('room-ending', handleRoomEnding);
+      eventSource.removeEventListener('room-ended', handleRoomEnded);
       eventSource.close();
     };
-  }, [roomId, queryClient]);
+  }, [queryClient, roomId]);
 
   return { connectionState, lastError };
 }
@@ -189,3 +224,4 @@ function parseJson<T>(raw: string): T | null {
 }
 
 export { useRoomEvents };
+export type { RoomEventHandlers };

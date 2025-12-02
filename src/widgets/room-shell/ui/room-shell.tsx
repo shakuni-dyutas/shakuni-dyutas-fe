@@ -1,15 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
+import { CircleSlash } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { ROOM_CHAT_CONSTRAINTS } from '@/entities/room/config/constants';
 import { useRoomDetailSnapshot } from '@/entities/room/model/use-room-detail-snapshot';
-import { useRoomEvents } from '@/entities/room/model/use-room-events';
 import { openBetModal } from '@/features/bet-place/ui/bet-modal';
 import { openEvidenceModal } from '@/features/evidence-submit/ui/evidence-modal';
 import { Button } from '@/shared/ui/button';
 import { useRoomBettingState } from '@/widgets/room-shell/model/use-room-betting-state';
 import { useRoomChatState } from '@/widgets/room-shell/model/use-room-chat-state';
+import { useRoomEndFlow } from '@/widgets/room-shell/model/use-room-end-flow';
 import { useRoomEvidenceState } from '@/widgets/room-shell/model/use-room-evidence-state';
 import { useRoomMetaState } from '@/widgets/room-shell/model/use-room-meta-state';
 import { useRoomParticipantsState } from '@/widgets/room-shell/model/use-room-participants-state';
@@ -26,7 +27,9 @@ interface RoomShellProps {
 
 function RoomShell({ roomId }: RoomShellProps) {
   const detailQuery = useRoomDetailSnapshot(roomId);
-  useRoomEvents(roomId);
+  const { endedInfo, handleViewResult } = useRoomEndFlow(roomId, detailQuery.data);
+  const [isMockingEnd, setIsMockingEnd] = useState(false);
+  const isDev = process.env.NODE_ENV !== 'production';
 
   const room = detailQuery.data ?? null;
 
@@ -79,7 +82,7 @@ function RoomShell({ roomId }: RoomShellProps) {
   }
 
   const handleOpenBetModal = () => {
-    if (!betting) {
+    if (!betting || isRoomEnded) {
       return;
     }
 
@@ -98,6 +101,9 @@ function RoomShell({ roomId }: RoomShellProps) {
   };
 
   const handleOpenEvidenceModal = () => {
+    if (isRoomEnded) {
+      return;
+    }
     openEvidenceModal({
       roomTitle: roomData.title,
       faction: currentFaction,
@@ -106,9 +112,66 @@ function RoomShell({ roomId }: RoomShellProps) {
     }).catch(() => {});
   };
 
+  const handleChatSubmitSafe = async (value: string) => {
+    if (isRoomEnded) {
+      return;
+    }
+    await handleChatSubmit(value);
+  };
+
+  const handleMockEnd = async () => {
+    if (!roomId) {
+      return;
+    }
+    setIsMockingEnd(true);
+    try {
+      await fetch(`/api/rooms/${roomId}/end`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to trigger mock end event', error);
+    } finally {
+      setIsMockingEnd(false);
+    }
+  };
+
+  const isRoomEnded = Boolean(endedInfo);
+
   return (
     <div className="relative flex min-h-screen flex-col bg-background pb-40">
+      {isRoomEnded ? (
+        <div className="border-destructive/40 border-b bg-destructive/10 px-4 py-3 text-destructive">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <CircleSlash className="h-5 w-5" aria-hidden />
+              <div className="space-y-1">
+                <p className="font-semibold text-sm">이 재판은 종료되었습니다.</p>
+                <p className="text-destructive/90 text-xs">
+                  상호작용은 종료되었으며 결과만 확인할 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <Button variant="destructive" size="sm" onClick={handleViewResult}>
+              결과 확인
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <RoomSummaryBar room={roomData} />
+      {isDev ? (
+        <div className="mx-auto flex w-full max-w-6xl justify-end px-4 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleMockEnd}
+            disabled={isMockingEnd}
+            className="text-xs"
+          >
+            {isMockingEnd ? '종료 시뮬레이션 중…' : '종료 이벤트 시뮬레이트'}
+          </Button>
+        </div>
+      ) : null}
 
       <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -122,13 +185,15 @@ function RoomShell({ roomId }: RoomShellProps) {
       </div>
 
       <RoomFooterBar
-        onSubmit={handleChatSubmit}
+        onSubmit={handleChatSubmitSafe}
         onBetClick={handleOpenBetModal}
         onEvidenceClick={handleOpenEvidenceModal}
-        isEvidenceDisabled={isEvidenceDisabled}
+        isEvidenceDisabled={isEvidenceDisabled || isRoomEnded}
         hasSubmittedEvidence={hasSubmittedEvidence}
         maxLength={ROOM_CHAT_CONSTRAINTS.maxLength}
-        isBetDisabled={hasPlacedBet}
+        isBetDisabled={hasPlacedBet || isRoomEnded}
+        isEnded={isRoomEnded}
+        onResultClick={handleViewResult}
       />
     </div>
   );

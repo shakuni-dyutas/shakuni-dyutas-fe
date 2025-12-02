@@ -22,6 +22,9 @@ export const ROUTE_PATHS = {
   ROOM(roomId: string): string {
     return `/rooms/${roomId}`;
   },
+  ROOM_RESULT(roomId: string): string {
+    return `/rooms/${roomId}/result`;
+  },
 } as const;
 
 // UI 관련 상수
